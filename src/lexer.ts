@@ -1,6 +1,5 @@
 import { match } from 'ts-pattern'
 import type { Token, TokenType } from './token'
-import { fullMatch } from './utils'
 
 export class Lexer {
   constructor(
@@ -45,12 +44,9 @@ export class Lexer {
   }
 
   private parseNumber(): Token {
-    const NUMBER_REGEX = /[0-9]+[.]?[0-9]*/
+    const NUMBER_REGEX = /^[0-9]+[.]?[0-9]*$/
     let i = 1
-    while (
-      fullMatch(NUMBER_REGEX, this.src.slice(0, i)) &&
-      i <= this.src.length
-    ) {
+    while (NUMBER_REGEX.test(this.src.slice(0, i)) && i <= this.src.length) {
       i += 1
     }
     const col = this.col
