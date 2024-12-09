@@ -17,6 +17,7 @@ enum Direction {
 
 type Boxes = []Box
 
+# function to create a box
 fn create_unit_box(): Box {
   return Box {x: 1, y: 1, width: 20};
 }
