@@ -1,0 +1,23 @@
+{
+	"name": "clara-lang",
+	"type": "module",
+	"scripts": {
+		"format": "prettier --write --ignore-path .gitignore --cache .",
+		"lint": "eslint .",
+		"typecheck": "tsc",
+		"test": "vitest"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.16.0",
+		"@types/bun": "latest",
+		"eslint": "^9.16.0",
+		"prettier": "^3.4.2",
+		"typescript-eslint": "^8.17.0"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"vitest": "^2.1.8"
+	}
+}

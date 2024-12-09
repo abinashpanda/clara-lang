@@ -1,0 +1,54 @@
+package main;
+
+import math;
+
+struct Box {
+  x: number;
+  y: number;
+  width: number;
+};
+
+enum Direction {
+  UP,
+  DOWN,
+  RIGHT,
+  LEFT,
+};
+
+type Boxes = []Box
+
+fn create_unit_box(): Box {
+  return Box {x: 1, y: 1, width: 20};
+}
+
+fn calc_radius(inner_radius: number, delta: number): number {
+  return inner_radius + delta;
+}
+
+fn get_direction(x1: number, y1: number, x2: number, y2: number): [Direction, Direction] {
+  let delta_x: number = x1 - x2;
+  let delta_y: number = y1 - y2;
+  let direction_x = delta_x > 0 ? Direction.RIGHT : Direction.LEFT;
+  let direction_y = delta_y > 0 ? Direction.UP : Direction.DOWN;
+  return [direction_x, direction_y];
+}
+
+enum UserRole {
+  ADMIN,
+  MANAGER,
+  SUBORDINATE,
+}
+
+fn get_role_name_from_user(role: UserRole): string {
+  return match(role) {
+    UserRole.ADMIN: {
+      return 'Admin';
+    };
+    otherwise: {
+      return 'User';
+    };
+  }
+}
+
+fn main() {
+}
