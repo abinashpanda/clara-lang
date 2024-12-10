@@ -2,6 +2,7 @@ export const TOKENS = {
   EOF: '',
 
   SEMI: ';',
+  COLON: ':',
   COMMA: ',',
   DOT: '.',
   DOT_DOT: '..',
@@ -33,6 +34,8 @@ export const TOKENS = {
   ASTERISK: '*',
   SLASH: '/',
 
+  IDENT: '<identifier>',
+  LET: 'let',
   FUNCTION: 'fn',
   RETURN: 'return',
   MATCH: 'match',
@@ -61,7 +64,8 @@ export type Token = {
   col: number // col number of the start of the token
 }
 
-export const LITERAL_TO_IDENT_MAP: Record<string, TokenType> = {
+export const LITERAL_TO_KEYWORD_MAP: Record<string, TokenType> = {
+  let: 'LET',
   fn: 'FUNCTION',
   return: 'RETURN',
   match: 'MATCH',
