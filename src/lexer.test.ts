@@ -104,6 +104,20 @@ fn main() {
     { tokenType: 'L_PAREN', literal: '(' },
     { tokenType: 'R_PAREN', literal: ')' },
     { tokenType: 'L_BRACE', literal: '{' },
+    { tokenType: 'LET', literal: 'let' },
+    { tokenType: 'IDENT', literal: 'first_number' },
+    { tokenType: 'COLON', literal: ':' },
+    { tokenType: 'NUMBER_TYPE', literal: 'number' },
+    { tokenType: 'EQ', literal: '=' },
+    { tokenType: 'NUMBER', literal: '10' },
+    { tokenType: 'SEMI', literal: ';' },
+    { tokenType: 'LET', literal: 'let' },
+    { tokenType: 'IDENT', literal: 'second_number' },
+    { tokenType: 'COLON', literal: ':' },
+    { tokenType: 'NUMBER_TYPE', literal: 'number' },
+    { tokenType: 'EQ', literal: '=' },
+    { tokenType: 'NUMBER', literal: '20' },
+    { tokenType: 'SEMI', literal: ';' },
   ]
   for (const e of expected) {
     const token = lexer.next()
