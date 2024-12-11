@@ -1,6 +1,6 @@
 import { test, expect } from 'bun:test'
-import type { TokenType } from './token'
-import { Lexer } from './lexer'
+import type { TokenType } from '../token'
+import { Lexer } from '../lexer'
 
 test('Lexer parses numbers correctly', () => {
   const input = '2 + 3.0 - 34.3;'

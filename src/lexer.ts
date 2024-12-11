@@ -1,17 +1,18 @@
 import { match } from 'ts-pattern'
 import { LITERAL_TO_KEYWORD_MAP, type Token, type TokenType } from './token'
-import { createError, type ErrorType, type LangError } from './error'
+import { createLangError, type ErrorType, type LangError } from './error'
 
 export class Lexer {
   constructor(
     private src: string,
+    private readonly rawInput: string = src,
     private line: number = 1,
     private col: number = 1,
-    private _errors: LangError[] = [],
+    private langErrors: LangError[] = [],
   ) {}
 
   get errors() {
-    return this._errors
+    return this.langErrors
   }
 
   next(): Token {
@@ -103,7 +104,10 @@ export class Lexer {
         if (/[a-zA-z_]/.test(val)) {
           return this.parseIdentifier()
         }
-        throw new Error(`invalid token ${val}`)
+        this.addError(`invalid token ${val}`, 'SyntaxError')
+        // this \n is added, so as to add a new line in the stack trace
+        // if that won't be present, the bun messes with the error formatting
+        throw new Error('\n' + this.errors[0].toString())
       })
   }
 
@@ -208,8 +212,14 @@ export class Lexer {
   }
 
   private addError(message: string, errorType: ErrorType = 'SyntaxError') {
-    this._errors.push(
-      createError({ col: this.col, line: this.line, message, errorType }),
+    this.langErrors.push(
+      createLangError({
+        col: this.col,
+        line: this.line,
+        message,
+        errorType,
+        src: this.rawInput,
+      }),
     )
   }
 }

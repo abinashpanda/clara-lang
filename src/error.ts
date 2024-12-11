@@ -1,62 +1,67 @@
 export type ErrorType = 'SyntaxError'
 
-export type LangError = {
-  col: number
-  line: number
-  errorType: ErrorType
-  error: Error
-}
+export class LangError {
+  constructor(
+    private readonly src: string,
+    private readonly col: number,
+    private readonly line: number,
+    private readonly errorType: ErrorType,
+    private readonly message: string,
+  ) {}
 
-export function createError({
-  col,
-  line,
-  message,
-  errorType,
-}: {
-  col: number
-  line: number
-  message: string
-  errorType: ErrorType
-}): LangError {
-  return {
-    col,
-    line,
-    errorType,
-    error: new Error(message),
-  }
-}
+  toString() {
+    let line = 1
+    let i = 0
 
-export function formatError(input: string, langError: LangError): string {
-  let line = 1
-  const i = 0
+    let mode: 'start' | 'stop' | undefined =
+      this.line === line ? 'start' : undefined
+    let message = mode === 'start' ? `${line} | ` : ''
+    let spacer = message.length
 
-  let mode: 'start' | 'stop' | undefined =
-    langError.line === line ? 'start' : undefined
-  let message = mode === 'start' ? `${line} | ` : ''
-  let spacer = message.length
+    while (i < this.src.length && mode !== 'stop') {
+      const char = this.src[i]
 
-  while (i < input.length && mode !== 'stop') {
-    const char = input[i]
-
-    if (char === '\n') {
       if (mode === 'start') {
-        mode = 'stop'
-      } else {
+        if (char === '\n') {
+          mode = 'stop'
+        } else {
+          message = `${message}${this.src[i]}`
+        }
+      }
+
+      if (char === '\n') {
         line += 1
-        if (line === langError.line) {
+        if (line === this.line) {
           mode = 'start'
           message = `${line} | `
           spacer = message.length
         }
       }
-    } else {
-      message = `${message}${input[i]}`
+
+      i += 1
     }
+
+    // col starts with first index, because of which we have to subtract - 1
+    message = `${message}\n${repeat(' ', this.col - 1 + spacer)}^^\n${this.errorType}: ${this.message}`
+
+    return message
   }
+}
 
-  message = `${message}\n${repeat(' ', langError.col)}^^\n${repeat(' ', spacer)}${langError.errorType}: ${langError.error.message}`
-
-  return message
+export function createLangError({
+  src,
+  col,
+  line,
+  message,
+  errorType,
+}: {
+  src: string
+  col: number
+  line: number
+  message: string
+  errorType: ErrorType
+}): LangError {
+  return new LangError(src, col, line, errorType, message)
 }
 
 function repeat(char: string, count: number) {
