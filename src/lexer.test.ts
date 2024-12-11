@@ -118,10 +118,47 @@ fn main() {
     { tokenType: 'EQ', literal: '=' },
     { tokenType: 'NUMBER', literal: '20' },
     { tokenType: 'SEMI', literal: ';' },
+    { tokenType: 'LET', literal: 'let' },
+    { tokenType: 'IDENT', literal: 'sum_of_numbers' },
+    { tokenType: 'COLON', literal: ':' },
+    { tokenType: 'NUMBER_TYPE', literal: 'number' },
+    { tokenType: 'EQ', literal: '=' },
+    { tokenType: 'IDENT', literal: 'sum' },
+    { tokenType: 'L_PAREN', literal: '(' },
+    { tokenType: 'IDENT', literal: 'a' },
+    { tokenType: 'COMMA', literal: ',' },
+    { tokenType: 'IDENT', literal: 'b' },
+    { tokenType: 'R_PAREN', literal: ')' },
+    { tokenType: 'SEMI', literal: ';' },
+    { tokenType: 'IDENT', literal: 'print' },
+    { tokenType: 'L_PAREN', literal: '(' },
+    { tokenType: 'IDENT', literal: 'sum_of_numbers' },
+    { tokenType: 'R_PAREN', literal: ')' },
+    { tokenType: 'SEMI', literal: ';' },
+    { tokenType: 'R_BRACE', literal: '}' },
+    { tokenType: 'EOF', literal: '' },
   ]
   for (const e of expected) {
     const token = lexer.next()
     expect(token.type).toEqual(e.tokenType)
     expect(token.literal).toEqual(e.literal)
+  }
+})
+
+test('Lexers parses string correctly', () => {
+  const input = 'let foo = "bar";'
+  const lexer = new Lexer(input)
+  const expected: [TokenType, string][] = [
+    ['LET', 'let'],
+    ['IDENT', 'foo'],
+    ['EQ', '='],
+    ['STRING', 'bar'],
+    ['SEMI', ';'],
+    ['EOF', ''],
+  ]
+  for (const e of expected) {
+    const token = lexer.next()
+    expect(token.type).toEqual(e[0])
+    expect(token.literal).toEqual(e[1])
   }
 })

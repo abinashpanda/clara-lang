@@ -1,12 +1,18 @@
 import { match } from 'ts-pattern'
 import { LITERAL_TO_KEYWORD_MAP, type Token, type TokenType } from './token'
+import { createError, type ErrorType, type LangError } from './error'
 
 export class Lexer {
   constructor(
     private src: string,
     private line: number = 1,
     private col: number = 1,
+    private _errors: LangError[] = [],
   ) {}
+
+  get errors() {
+    return this._errors
+  }
 
   next(): Token {
     this.skipWhitespace()
@@ -87,6 +93,9 @@ export class Lexer {
       .with(']', () => {
         return this.token('R_SQUARE', 1)
       })
+      .with('"', () => {
+        return this.parseSingleLineString()
+      })
       .otherwise((val) => {
         if (/[0-9]/.test(val)) {
           return this.parseNumber()
@@ -105,6 +114,24 @@ export class Lexer {
       literal: this.slice(len),
       line: this.line,
       col,
+    }
+  }
+
+  private parseSingleLineString(): Token {
+    const col = this.col
+    this.slice(1)
+    let i = 1
+    while (this.src[i] !== '"' && i <= this.src.length) {
+      i += 1
+      // TODO: Handle the case where the lexer encounters a new line
+    }
+    const literal = this.slice(i)
+    this.slice(1)
+    return {
+      type: 'STRING',
+      literal,
+      col,
+      line: this.line,
     }
   }
 
@@ -178,5 +205,11 @@ export class Lexer {
     this.src = this.src.slice(len)
     this.col += len
     return token
+  }
+
+  private addError(message: string, errorType: ErrorType = 'SyntaxError') {
+    this._errors.push(
+      createError({ col: this.col, line: this.line, message, errorType }),
+    )
   }
 }
