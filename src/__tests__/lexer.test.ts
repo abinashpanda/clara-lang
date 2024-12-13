@@ -1,6 +1,7 @@
 import { test, expect } from 'bun:test'
 import type { TokenType } from '../token'
 import { Lexer } from '../lexer'
+import { invariant } from '../utils'
 
 test('Lexer parses numbers correctly', () => {
   const input = '2 + 3.0 - 34.3;'
@@ -16,6 +17,10 @@ test('Lexer parses numbers correctly', () => {
   ]
   for (const e of expected) {
     const token = lexer.next()
+
+    expect(token).not.toBeNull()
+    invariant(token, 'token should be present')
+
     expect(token.type).toEqual(e.type)
     expect(token.literal).toEqual(e.literal)
   }
@@ -25,6 +30,10 @@ test('Lexer skips single line comments correctly', () => {
   const input = `# single line comment`
   const lexer = new Lexer(input)
   const token = lexer.next()
+
+  expect(token).not.toBeNull()
+  invariant(token, 'token should be present')
+
   expect(token.type).toEqual('EOF')
 })
 
@@ -46,6 +55,10 @@ let foo = 21; # some other comment
   ]
   for (const e of expected) {
     const token = lexer.next()
+
+    expect(token).not.toBeNull()
+    invariant(token, 'token should be present')
+
     expect(token.type).toEqual(e.tokenType)
     expect(token.literal).toEndWith(e.literal)
   }
@@ -140,6 +153,10 @@ fn main() {
   ]
   for (const e of expected) {
     const token = lexer.next()
+
+    expect(token).not.toBeNull()
+    invariant(token, 'token should be present')
+
     expect(token.type).toEqual(e.tokenType)
     expect(token.literal).toEqual(e.literal)
   }
@@ -158,6 +175,10 @@ test('Lexers parses string correctly', () => {
   ]
   for (const e of expected) {
     const token = lexer.next()
+
+    expect(token).not.toBeNull()
+    invariant(token, 'token should be present')
+
     expect(token.type).toEqual(e[0])
     expect(token.literal).toEqual(e[1])
   }

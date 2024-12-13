@@ -15,7 +15,7 @@ export class Lexer {
     return this.langErrors
   }
 
-  next(): Token {
+  next(): Token | null {
     this.skipWhitespace()
 
     if (this.src.length === 0) {
@@ -23,7 +23,7 @@ export class Lexer {
     }
 
     return match(this.src[0])
-      .returnType<Token>()
+      .returnType<Token | null>()
       .with('#', () => {
         this.skipComment()
         return this.next()
@@ -105,9 +105,7 @@ export class Lexer {
           return this.parseIdentifier()
         }
         this.addError(`invalid token ${val}`, 'SyntaxError')
-        // this \n is added, so as to add a new line in the stack trace
-        // if that won't be present, the bun messes with the error formatting
-        throw new Error('\n' + this.errors[0].toString())
+        return null
       })
   }
 
