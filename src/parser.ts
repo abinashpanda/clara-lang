@@ -10,8 +10,7 @@ import {
 import type { Lexer } from './lexer'
 import type { Token, TokenType } from './token'
 import { invariant, type Nullable } from './utils'
-import type { Context } from './context'
-import { createLangError } from './error'
+import { createLangError, type ErrorType } from './error'
 
 type ParsePrefixFn = () => Expression
 type ParseInfixFn = (left: Expression) => Expression
@@ -22,7 +21,7 @@ export class Parser {
 
   constructor(
     private readonly lexer: Lexer,
-    private readonly context: Context,
+    private readonly source: string,
     private curToken: Nullable<Token> = null,
     private peekToken: Nullable<Token> = null,
   ) {
@@ -35,6 +34,7 @@ export class Parser {
     this.registerParsePrefixFn('STRING', this.parsePrimary.bind(this))
     this.registerParseInfixFn('TRUE', this.parsePrimary.bind(this))
     this.registerParseInfixFn('FALSE', this.parsePrimary.bind(this))
+    this.registerParsePrefixFn('L_PAREN', this.parseGrouped.bind(this))
 
     this.registerParseInfixFn('EQ_EQ', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('NOT_EQ', this.parseInfixExpression.bind(this))
@@ -65,42 +65,33 @@ export class Parser {
     return program
   }
 
-  private parseStatement(): Statement | null {
+  private parseStatement(): Nullable<Statement> {
     return match(this.curToken)
-      .returnType<Statement | null>()
+      .returnType<Nullable<Statement>>()
       .otherwise(() => {
         return this.parseExpressionStatement()
       })
   }
 
-  private parseExpressionStatement(): ExpressionStatement | null {
+  private parseExpressionStatement(): ExpressionStatement {
     const expression = this.parseExpression()
-    if (expression) {
-      return {
-        type: 'statement',
-        statementType: 'expression',
-        expression,
-      }
+    return {
+      type: 'statement',
+      statementType: 'expression',
+      expression,
     }
-    return null
   }
 
   private parseExpression(
     precedence: Precedence = Precedence.LOWEST,
-  ): Expression | null {
+  ): Expression {
     invariant(this.curToken, 'curToken should be present')
     const parsePrefixFn = this.prefixFnMap[this.curToken.type]
     if (!parsePrefixFn) {
-      this.context.addError(
-        createLangError({
-          src: this.lexer.source,
-          col: this.curToken.col,
-          line: this.curToken.line,
-          message: 'no parse prefix function found',
-          errorType: 'SyntaxError',
-        }),
+      this.throwError(
+        `no parse prefix function found for tokenType ${this.curToken.type}`,
+        'SyntaxError',
       )
-      return null
     }
 
     let left = parsePrefixFn()
@@ -132,7 +123,7 @@ export class Parser {
       .with({ type: 'NUMBER' }, ({ literal }) => {
         const value = Number.parseFloat(literal)
         if (Number.isNaN(value)) {
-          // TODO: Throw error
+          this.throwError('invalid number type', 'SyntaxError')
         }
         return {
           type: 'expression',
@@ -163,7 +154,26 @@ export class Parser {
   }
 
   private parseInfixExpression(left: Expression): Expression {
-    throw new Error('not implemented')
+    invariant(this.curToken, 'curToken should be present')
+
+    const precedence = this.curPrecedence()
+    const operator = this.curToken.literal
+    this.nextToken()
+    const right = this.parseExpression(precedence)
+    return {
+      type: 'expression',
+      expressionType: 'infix',
+      operator,
+      left,
+      right,
+    }
+  }
+
+  private parseGrouped() {
+    this.nextToken()
+    const expression = this.parseExpression(Precedence.LOWEST)
+    this.expectPeek('R_PAREN')
+    return expression
   }
 
   private nextToken() {
@@ -187,5 +197,28 @@ export class Parser {
   private peekPrecedence() {
     invariant(this.peekToken, 'peek token should be present')
     return OPERATOR_PREDENCE[this.peekToken?.type] ?? Precedence.LOWEST
+  }
+
+  private expectPeek(tokenType: TokenType) {
+    if (this.peekToken?.type !== tokenType) {
+      this.throwError(
+        `expected ${tokenType}, got ${this.peekToken?.type}`,
+        'SyntaxError',
+      )
+    }
+  }
+
+  private throwError(
+    message: string,
+    errorType: ErrorType = 'SyntaxError',
+  ): never {
+    invariant(this.curToken, 'curToken should be present')
+    throw createLangError({
+      col: this.curToken?.col,
+      line: this.curToken?.line,
+      message,
+      errorType,
+      src: this.source,
+    })
   }
 }

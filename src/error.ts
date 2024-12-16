@@ -1,15 +1,17 @@
 export type ErrorType = 'SyntaxError'
 
-export class LangError {
+export class LangError extends Error {
   constructor(
     private readonly src: string,
     private readonly col: number,
     private readonly line: number,
     private readonly errorType: ErrorType,
-    private readonly message: string,
-  ) {}
+    private readonly errorMessage: string,
+  ) {
+    super(errorMessage)
+  }
 
-  toString() {
+  format() {
     let line = 1
     let i = 0
 
@@ -42,7 +44,7 @@ export class LangError {
     }
 
     // col starts with first index, because of which we have to subtract - 1
-    message = `${message}\n${repeat(' ', this.col - 1 + spacer)}^^\n${this.errorType}: ${this.message}`
+    message = `${message}\n${repeat(' ', this.col - 1 + spacer)}^^\n${this.errorType}: ${this.errorMessage}`
 
     return message
   }

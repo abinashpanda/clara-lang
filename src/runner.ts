@@ -1,17 +1,24 @@
-import type { Context } from './context'
+import { LangError } from './error'
 import { Lexer } from './lexer'
 import { Parser } from './parser'
 
 export class Runner {
   constructor(
     private readonly src: string,
-    private readonly context: Context,
-    private readonly lexer = new Lexer(src, context),
-    private readonly parser = new Parser(lexer, context),
+    private readonly lexer = new Lexer(src),
+    private readonly parser = new Parser(lexer, src),
   ) {}
 
   run() {
-    const program = this.parser.parse()
-    console.log(program)
+    try {
+      this.parser.parse()
+    } catch (error) {
+      if (error instanceof LangError) {
+        // eslint-disable-next-line no-console
+        console.log(error.format())
+      } else {
+        throw error
+      }
+    }
   }
 }

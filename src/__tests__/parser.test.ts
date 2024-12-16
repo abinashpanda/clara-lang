@@ -1,13 +1,7 @@
-import { test, expect, beforeEach } from 'bun:test'
+import { test, expect } from 'bun:test'
 import { Lexer } from '../lexer'
 import { Parser } from '../parser'
 import { formatExpression } from '../utils'
-import { Context } from '../context'
-
-const context = new Context()
-beforeEach(() => {
-  context.reset()
-})
 
 test('Parser parses expression statement correctly', () => {
   const tests: { input: string; output: string }[] = [
@@ -29,8 +23,8 @@ test('Parser parses expression statement correctly', () => {
     },
   ]
   for (const t of tests) {
-    const lexer = new Lexer(t.input, context)
-    const parser = new Parser(lexer, context)
+    const lexer = new Lexer(t.input)
+    const parser = new Parser(lexer, t.input)
     const program = parser.parse()
     expect(program.statements.length).toEqual(1)
     const statment = program.statements[0]

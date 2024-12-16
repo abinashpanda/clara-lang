@@ -5,10 +5,16 @@ export type Nullable<T> = T | null
 
 export function invariant(
   condition: unknown,
-  message: string,
+  message: string | (() => string),
 ): asserts condition {
+  const prefix = 'InvariantError'
   if (!condition) {
-    throw new Error(message)
+    const messageStr = typeof message === 'function' ? message() : message
+    const errorMessage =
+      process.env.NODE_ENV === 'production'
+        ? prefix
+        : `${prefix}: ${messageStr}`
+    throw new Error(errorMessage)
   }
 }
 
@@ -22,7 +28,7 @@ export function formatExpression(expression: Expression): string {
       return `(${operator} ${right})`
     })
     .with({ expressionType: 'infix' }, ({ operator, right, left }) => {
-      return `(${formatExpression(left)} ${operator} ${right})`
+      return `(${formatExpression(left)} ${operator} ${formatExpression(right)})`
     })
     .otherwise(() => {
       throw new Error('unknown expression')

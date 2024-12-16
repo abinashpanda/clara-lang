@@ -1,31 +1,16 @@
 import { match } from 'ts-pattern'
 import { LITERAL_TO_KEYWORD_MAP, type Token, type TokenType } from './token'
-import { createLangError, type ErrorType, type LangError } from './error'
-import { Context } from './context'
+import { createLangError, type ErrorType } from './error'
 
 export class Lexer {
   constructor(
     private src: string,
-    private context: Context,
     private readonly rawInput: string = src,
     private line: number = 1,
     private col: number = 1,
-    private langErrors: LangError[] = [],
   ) {}
 
-  get errors() {
-    return this.langErrors
-  }
-
-  // FIXME: Don't know if this should be the way to get source
-  // out the lexer, so the parser should be initiated with the source
-  // and create a lexer itself
-  // For now, this hack works
-  get source() {
-    return this.rawInput
-  }
-
-  next(): Token | null {
+  next(): Token {
     this.skipWhitespace()
 
     if (this.src.length === 0) {
@@ -33,7 +18,7 @@ export class Lexer {
     }
 
     return match(this.src[0])
-      .returnType<Token | null>()
+      .returnType<Token>()
       .with('#', () => {
         this.skipComment()
         return this.next()
@@ -117,8 +102,7 @@ export class Lexer {
         if (/[a-zA-z_]/.test(val)) {
           return this.parseIdentifier()
         }
-        this.addError(`invalid token ${val}`, 'SyntaxError')
-        return null
+        this.throwError(`invalid token ${val}`, 'SyntaxError')
       })
   }
 
@@ -222,15 +206,16 @@ export class Lexer {
     return token
   }
 
-  private addError(message: string, errorType: ErrorType = 'SyntaxError') {
-    this.context.addError(
-      createLangError({
-        col: this.col,
-        line: this.line,
-        message,
-        errorType,
-        src: this.rawInput,
-      }),
-    )
+  private throwError(
+    message: string,
+    errorType: ErrorType = 'SyntaxError',
+  ): never {
+    throw createLangError({
+      col: this.col,
+      line: this.line,
+      message,
+      errorType,
+      src: this.rawInput,
+    })
   }
 }
