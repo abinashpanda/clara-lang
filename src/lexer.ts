@@ -1,10 +1,12 @@
 import { match } from 'ts-pattern'
 import { LITERAL_TO_KEYWORD_MAP, type Token, type TokenType } from './token'
 import { createLangError, type ErrorType, type LangError } from './error'
+import { Context } from './context'
 
 export class Lexer {
   constructor(
     private src: string,
+    private context: Context,
     private readonly rawInput: string = src,
     private line: number = 1,
     private col: number = 1,
@@ -13,6 +15,14 @@ export class Lexer {
 
   get errors() {
     return this.langErrors
+  }
+
+  // FIXME: Don't know if this should be the way to get source
+  // out the lexer, so the parser should be initiated with the source
+  // and create a lexer itself
+  // For now, this hack works
+  get source() {
+    return this.rawInput
   }
 
   next(): Token | null {
@@ -51,6 +61,9 @@ export class Lexer {
       })
       .with('/', () => {
         return this.token('SLASH', 1)
+      })
+      .with('%', () => {
+        return this.token('MODULUS', 1)
       })
       .with('=', () => {
         if (this.src[1] === '=') {
@@ -210,7 +223,7 @@ export class Lexer {
   }
 
   private addError(message: string, errorType: ErrorType = 'SyntaxError') {
-    this.langErrors.push(
+    this.context.addError(
       createLangError({
         col: this.col,
         line: this.line,

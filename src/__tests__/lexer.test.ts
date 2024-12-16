@@ -1,11 +1,18 @@
-import { test, expect } from 'bun:test'
+import { test, expect, beforeEach } from 'bun:test'
 import type { TokenType } from '../token'
 import { Lexer } from '../lexer'
 import { invariant } from '../utils'
+import { Context } from '../context'
+
+const context = new Context()
+
+beforeEach(() => {
+  context.reset()
+})
 
 test('Lexer parses numbers correctly', () => {
   const input = '2 + 3.0 - 34.3;'
-  const lexer = new Lexer(input)
+  const lexer = new Lexer(input, context)
   const expected: { type: TokenType; literal: string }[] = [
     { type: 'NUMBER', literal: '2' },
     { type: 'PLUS', literal: '+' },
@@ -20,6 +27,7 @@ test('Lexer parses numbers correctly', () => {
 
     expect(token).not.toBeNull()
     invariant(token, 'token should be present')
+    expect(context.errors.length).toBe(0)
 
     expect(token.type).toEqual(e.type)
     expect(token.literal).toEqual(e.literal)
@@ -28,11 +36,12 @@ test('Lexer parses numbers correctly', () => {
 
 test('Lexer skips single line comments correctly', () => {
   const input = `# single line comment`
-  const lexer = new Lexer(input)
+  const lexer = new Lexer(input, context)
   const token = lexer.next()
 
   expect(token).not.toBeNull()
   invariant(token, 'token should be present')
+  expect(context.errors.length).toBe(0)
 
   expect(token.type).toEqual('EOF')
 })
@@ -44,7 +53,7 @@ test('Lexer skips multi line comments correctly', () => {
 let foo = 21; # some other comment
 # other comment
 `
-  const lexer = new Lexer(input)
+  const lexer = new Lexer(input, context)
   const expected: { tokenType: TokenType; literal: string }[] = [
     { tokenType: 'LET', literal: 'let' },
     { tokenType: 'IDENT', literal: 'foo' },
@@ -58,6 +67,7 @@ let foo = 21; # some other comment
 
     expect(token).not.toBeNull()
     invariant(token, 'token should be present')
+    expect(context.errors.length).toBe(0)
 
     expect(token.type).toEqual(e.tokenType)
     expect(token.literal).toEndWith(e.literal)
@@ -80,7 +90,7 @@ fn main() {
   print(sum_of_numbers);
 }
 `
-  const lexer = new Lexer(input)
+  const lexer = new Lexer(input, context)
   const expected: { tokenType: TokenType; literal: string }[] = [
     { tokenType: 'LET', literal: 'let' },
     { tokenType: 'IDENT', literal: 'first_variable' },
@@ -156,6 +166,7 @@ fn main() {
 
     expect(token).not.toBeNull()
     invariant(token, 'token should be present')
+    expect(context.errors.length).toBe(0)
 
     expect(token.type).toEqual(e.tokenType)
     expect(token.literal).toEqual(e.literal)
@@ -164,7 +175,7 @@ fn main() {
 
 test('Lexers parses string correctly', () => {
   const input = 'let foo = "bar";'
-  const lexer = new Lexer(input)
+  const lexer = new Lexer(input, context)
   const expected: [TokenType, string][] = [
     ['LET', 'let'],
     ['IDENT', 'foo'],
@@ -178,6 +189,7 @@ test('Lexers parses string correctly', () => {
 
     expect(token).not.toBeNull()
     invariant(token, 'token should be present')
+    expect(context.errors.length).toBe(0)
 
     expect(token.type).toEqual(e[0])
     expect(token.literal).toEqual(e[1])

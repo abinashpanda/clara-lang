@@ -33,6 +33,7 @@ export const TOKENS = {
   MINUS: '-',
   ASTERISK: '*',
   SLASH: '/',
+  MODULUS: '%',
 
   IDENT: '<identifier>',
   LET: 'let',

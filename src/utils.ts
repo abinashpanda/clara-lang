@@ -1,6 +1,8 @@
 import { match } from 'ts-pattern'
 import type { Expression } from './ast'
 
+export type Nullable<T> = T | null
+
 export function invariant(
   condition: unknown,
   message: string,

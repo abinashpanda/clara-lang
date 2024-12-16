@@ -1,13 +1,21 @@
+import type { TokenType } from './token'
+
 export type BaseExpression = {
   type: 'expression'
 }
 
-export type Primary = number | string
+export type IdentExpression = BaseExpression & {
+  expressionType: 'ident'
+  identifier: string
+}
 
 export type PrimaryExpression = BaseExpression & {
   expressionType: 'primary'
-  value: Primary
-}
+} & (
+    | { primaryType: 'string'; value: string }
+    | { primaryType: 'number'; value: number }
+    | { primaryType: 'boolean'; value: boolean }
+  )
 
 export type InfixExpression = BaseExpression & {
   expressionType: 'infix'
@@ -22,7 +30,11 @@ export type PrefixExpression = BaseExpression & {
   right: Expression
 }
 
-export type Expression = PrimaryExpression | InfixExpression | PrefixExpression
+export type Expression =
+  | IdentExpression
+  | PrimaryExpression
+  | InfixExpression
+  | PrefixExpression
 
 export type BaseStatement = {
   type: 'statement'
@@ -38,4 +50,29 @@ export type Statement = ExpressionStatement
 export type Program = {
   type: 'program'
   statements: Statement[]
+}
+
+export enum Precedence {
+  LOWEST = 0,
+  LOGICAL,
+  SUM,
+  PRODUCT,
+  PRIMARY,
+}
+
+export const OPERATOR_PREDENCE: Partial<Record<TokenType, Precedence>> = {
+  EQ_EQ: Precedence.LOGICAL,
+  NOT_EQ: Precedence.LOGICAL,
+  GT: Precedence.LOGICAL,
+  GTE: Precedence.LOGICAL,
+  LT: Precedence.LOGICAL,
+  LTE: Precedence.LOGICAL,
+  PLUS: Precedence.SUM,
+  MINUS: Precedence.SUM,
+  ASTERISK: Precedence.PRODUCT,
+  SLASH: Precedence.PRODUCT,
+  MODULUS: Precedence.PRODUCT,
+  IDENT: Precedence.PRIMARY,
+  STRING: Precedence.PRIMARY,
+  NUMBER: Precedence.PRIMARY,
 }
