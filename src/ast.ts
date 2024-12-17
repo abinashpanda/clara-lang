@@ -4,7 +4,7 @@ export type BaseExpression = {
   type: 'expression'
 }
 
-export type IdentExpression = BaseExpression & {
+export type Identifier = BaseExpression & {
   expressionType: 'ident'
   identifier: string
 }
@@ -31,7 +31,7 @@ export type PrefixExpression = BaseExpression & {
 }
 
 export type Expression =
-  | IdentExpression
+  | Identifier
   | PrimaryExpression
   | InfixExpression
   | PrefixExpression
@@ -45,7 +45,28 @@ export type ExpressionStatement = BaseStatement & {
   expression: Expression
 }
 
-export type Statement = ExpressionStatement
+export type LetStatement = BaseStatement & {
+  statementType: 'let'
+  identifier: Identifier
+  typeDef?: TypeDef
+  expression: Expression
+}
+
+export type Statement = ExpressionStatement | LetStatement
+
+export type BaseTypeDef = {
+  type: 'typedef'
+}
+
+export type StringTypeDef = BaseTypeDef & {
+  defType: 'string'
+}
+
+export type NumberTypeDef = BaseTypeDef & {
+  defType: 'number'
+}
+
+export type TypeDef = StringTypeDef | NumberTypeDef
 
 export type Program = {
   type: 'program'

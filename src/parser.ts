@@ -4,8 +4,10 @@ import {
   Precedence,
   type Expression,
   type ExpressionStatement,
+  type LetStatement,
   type Program,
   type Statement,
+  type TypeDef,
 } from './ast'
 import type { Lexer } from './lexer'
 import type { Token, TokenType } from './token'
@@ -68,9 +70,38 @@ export class Parser {
   private parseStatement(): Nullable<Statement> {
     return match(this.curToken)
       .returnType<Nullable<Statement>>()
+      .with({ type: 'LET' }, () => this.parseLetStatement())
       .otherwise(() => {
         return this.parseExpressionStatement()
       })
+  }
+
+  private parseLetStatement(): LetStatement {
+    this.nextToken()
+    const ident = this.parsePrimary()
+    if (!ident || ident.expressionType !== 'ident') {
+      this.throwError(`expected identifier, got ${this.curToken?.type}`)
+    }
+    let typeDef: TypeDef | undefined
+    if (this.peekToken?.type === 'COLON') {
+      this.nextToken() // consume the current identifier token
+      this.nextToken() // consume the colon token
+      typeDef = this.parseTypeDef()
+    }
+
+    this.expectPeek('EQ')
+    this.nextToken()
+    const expression = this.parseExpression()
+
+    this.expectPeek('SEMI')
+
+    return {
+      type: 'statement',
+      statementType: 'let',
+      identifier: ident,
+      typeDef,
+      expression,
+    }
   }
 
   private parseExpressionStatement(): ExpressionStatement {
@@ -153,6 +184,22 @@ export class Parser {
     return expression
   }
 
+  private parseTypeDef(): TypeDef {
+    return match(this.curToken)
+      .returnType<TypeDef>()
+      .with({ type: 'NUMBER_TYPE' }, () => ({
+        type: 'typedef',
+        defType: 'number',
+      }))
+      .with({ type: 'STRING_TYPE' }, () => ({
+        type: 'typedef',
+        defType: 'string',
+      }))
+      .otherwise(() => {
+        this.throwError(`expected type, got ${this.curToken?.type}`)
+      })
+  }
+
   private parseInfixExpression(left: Expression): Expression {
     invariant(this.curToken, 'curToken should be present')
 
@@ -201,11 +248,16 @@ export class Parser {
 
   private expectPeek(tokenType: TokenType) {
     if (this.peekToken?.type !== tokenType) {
-      this.throwError(
-        `expected ${tokenType}, got ${this.peekToken?.type}`,
-        'SyntaxError',
-      )
+      invariant(this.peekToken, 'peekToken should be present')
+      throw createLangError({
+        col: this.peekToken?.col,
+        line: this.peekToken?.line,
+        message: `expected ${tokenType}, got ${this.peekToken?.type}`,
+        errorType: 'SyntaxError',
+        src: this.source,
+      })
     }
+    this.nextToken()
   }
 
   private throwError(

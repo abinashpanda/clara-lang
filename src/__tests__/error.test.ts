@@ -15,7 +15,7 @@ test('Error formatter shows error at the correct place', () => {
               ^^
 SyntaxError: expected =, got number
 `.trim()
-  expect(error.format()).toEqual(formattedMessage)
+  expect(error.message).toEqual(formattedMessage)
 })
 
 test('Error formatted shows error correctly in multiline', () => {
@@ -44,5 +44,5 @@ fn main() {
 5 | fn sum(a: number, b: number): 10 
                                   ^^
 SyntaxError: expected type, got number`.trim()
-  expect(error.format()).toEqual(formattedError)
+  expect(error.message).toEqual(formattedError)
 })

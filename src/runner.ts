@@ -15,7 +15,7 @@ export class Runner {
     } catch (error) {
       if (error instanceof LangError) {
         // eslint-disable-next-line no-console
-        console.log(error.format())
+        console.log(error.message)
       } else {
         throw error
       }
