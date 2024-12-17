@@ -76,7 +76,7 @@ function formatError({
   // col starts with first index, because of which we have to subtract - 1
   message = `${message}\n${repeat(' ', col - 1 + spacer)}^^\n${errorType}: ${errorMessage}`
 
-  return message
+  return box(message, 1)
 }
 
 function repeat(char: string, count: number) {
@@ -85,4 +85,20 @@ function repeat(char: string, count: number) {
     message += char
   }
   return message
+}
+
+function box(str: string, padding: number = 1) {
+  const lines = str.split('\n')
+  const maxChars = Math.max(...lines.map((line) => line.length))
+  const horizontalChars = maxChars + 2 * padding
+
+  return [
+    `╭${repeat('─', horizontalChars)}╮`,
+    ...lines.map((line) => {
+      const chars = line.length
+      const spaces = maxChars - chars
+      return `│${repeat(' ', padding)}${line}${repeat(' ', spaces + padding)}│`
+    }),
+    `╰${repeat('─', horizontalChars)}╯`,
+  ].join('\n')
 }

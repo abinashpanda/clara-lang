@@ -1,3 +1,5 @@
+import { match } from 'ts-pattern'
+
 export const TOKENS = {
   EOF: '',
 
@@ -57,6 +59,14 @@ export const TOKENS = {
 } as const
 
 export type TokenType = keyof typeof TOKENS
+
+export function formatToken(tokenType: TokenType, literal?: string) {
+  return match(tokenType)
+    .returnType<string>()
+    .with('NUMBER', () => `${literal} (NUMBER)`)
+    .with('STRING', () => `"${literal}" (STRING)`)
+    .otherwise(() => TOKENS[tokenType])
+}
 
 export type Token = {
   type: TokenType

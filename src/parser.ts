@@ -10,7 +10,7 @@ import {
   type TypeDef,
 } from './ast'
 import type { Lexer } from './lexer'
-import type { Token, TokenType } from './token'
+import { formatToken, type Token, type TokenType } from './token'
 import { invariant, type Nullable } from './utils'
 import { createLangError, type ErrorType } from './error'
 
@@ -252,7 +252,7 @@ export class Parser {
       throw createLangError({
         col: this.peekToken?.col,
         line: this.peekToken?.line,
-        message: `expected ${tokenType}, got ${this.peekToken?.type}`,
+        message: `expected ${formatToken(tokenType)}, got ${formatToken(this.peekToken?.type, this.peekToken.literal)}`,
         errorType: 'SyntaxError',
         src: this.source,
       })
