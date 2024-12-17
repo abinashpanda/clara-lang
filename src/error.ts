@@ -76,7 +76,7 @@ function formatError({
   // col starts with first index, because of which we have to subtract - 1
   message = `${message}\n${repeat(' ', col - 1 + spacer)}^^\n${errorType}: ${errorMessage}`
 
-  return box(message, 1)
+  return box(message, 2)
 }
 
 function repeat(char: string, count: number) {
@@ -87,18 +87,27 @@ function repeat(char: string, count: number) {
   return message
 }
 
+const BORDER = {
+  HORIZONTAL: '═',
+  VERTICAL: '║',
+  TOP_LEFT: '╔',
+  TOP_RIGHT: '╗',
+  BOTTOM_LEFT: '╚',
+  BOTTOM_RIGHT: '╝',
+} as const
+
 function box(str: string, padding: number = 1) {
   const lines = str.split('\n')
   const maxChars = Math.max(...lines.map((line) => line.length))
   const horizontalChars = maxChars + 2 * padding
 
   return [
-    `╭${repeat('─', horizontalChars)}╮`,
+    `${BORDER.TOP_LEFT}${repeat(BORDER.HORIZONTAL, horizontalChars)}${BORDER.TOP_RIGHT}`,
     ...lines.map((line) => {
       const chars = line.length
       const spaces = maxChars - chars
-      return `│${repeat(' ', padding)}${line}${repeat(' ', spaces + padding)}│`
+      return `${BORDER.VERTICAL}${repeat(' ', padding)}${line}${repeat(' ', spaces + padding)}${BORDER.VERTICAL}`
     }),
-    `╰${repeat('─', horizontalChars)}╯`,
+    `${BORDER.BOTTOM_LEFT}${repeat(BORDER.HORIZONTAL, horizontalChars)}${BORDER.BOTTOM_RIGHT}`,
   ].join('\n')
 }

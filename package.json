@@ -1,6 +1,7 @@
 {
 	"name": "clara-lang",
 	"type": "module",
+	"main": "bin/clara.ts",
 	"scripts": {
 		"clara": "bun run ./bin/clara.ts",
 		"format": "prettier --write --ignore-path .gitignore --cache .",
