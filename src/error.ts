@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import { repeat } from './utils'
 
 export function createLangError({
@@ -76,7 +77,7 @@ function formatError({
   }
 
   // col starts with first index, because of which we have to subtract - 1
-  message = `${message}\n${repeat(' ', col - 1 + spacer)}^^\n${errorType}: ${errorMessage}`
+  message = `${message}\n${repeat(' ', col - 1 + spacer)}^^\n${chalk.red(errorType)}: ${errorMessage}`
 
   return message
 }

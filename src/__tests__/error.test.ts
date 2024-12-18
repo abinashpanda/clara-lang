@@ -1,5 +1,6 @@
 import { test, expect } from 'bun:test'
 import { createLangError } from '../error'
+import chalk from 'chalk'
 
 test('Error formatter shows error at the correct place', () => {
   const input = 'let input 10;'
@@ -13,7 +14,7 @@ test('Error formatter shows error at the correct place', () => {
   const formattedMessage = `
 1 | let input 10;
               ^^
-SyntaxError: expected =, got number
+${chalk.red('SyntaxError')}: expected =, got number
 `.trim()
   expect(error.message).toEqual(formattedMessage)
 })
@@ -43,6 +44,6 @@ fn main() {
   const formattedError = `
 5 | fn sum(a: number, b: number): 10 
                                   ^^
-SyntaxError: expected type, got number`.trim()
+${chalk.red('SyntaxError')}: expected type, got number`.trim()
   expect(error.message).toEqual(formattedError)
 })

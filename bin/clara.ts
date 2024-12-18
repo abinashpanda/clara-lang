@@ -15,4 +15,20 @@ program
     runner.run()
   })
 
+program
+  .command('fmt')
+  .argument('<string>', 'path of the file/folder to format')
+  .option('--write', 'write the formatted content')
+  .action(() => {
+    throw new Error('not implemented')
+  })
+
+program
+  .command('lint')
+  .argument('<string>', 'path of the file/folder to lint')
+  .option('--fix', 'whether to fix the linter error or not')
+  .action(() => {
+    throw new Error('not implemented')
+  })
+
 program.parse()

@@ -3,6 +3,7 @@ import { Lexer } from '../lexer'
 import { Parser } from '../parser'
 import { formatExpression } from '../utils'
 import { LangError } from '../error'
+import chalk from 'chalk'
 
 test('Parser parses expression statement correctly', () => {
   const tests: { input: string; output: string }[] = [
@@ -84,7 +85,7 @@ test('Parser throws error correctly in parsing let statement', () => {
       `
 1 | let foo 10;
             ^^
-SyntaxError: expected =, got 10 (NUMBER)
+${chalk.red('SyntaxError')}: expected =, got 10 (NUMBER)
       `.trim(),
     )
   }

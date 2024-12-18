@@ -52,15 +52,27 @@ const BORDER = {
   BOTTOM_RIGHT: '╯',
 } as const
 
+function getCharacterLength(str: string) {
+  // Remove ANSI escape sequences
+  // eslint-disable-next-line no-control-regex
+  const cleanStr = str.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '')
+  // Return the length of the cleaned string
+  return [...cleanStr].length
+}
+
 export function box(str: string, padding: number = 1) {
   const lines = str.split('\n')
-  const maxChars = Math.max(...lines.map((line) => line.length))
+  const maxChars = Math.max(
+    ...lines.map((line) => {
+      return getCharacterLength(line)
+    }),
+  )
   const horizontalChars = maxChars + 2 * padding
 
   return [
     `${BORDER.TOP_LEFT}${repeat(BORDER.HORIZONTAL, horizontalChars)}${BORDER.TOP_RIGHT}`,
     ...lines.map((line) => {
-      const chars = line.length
+      const chars = getCharacterLength(line)
       const spaces = maxChars - chars
       return `${BORDER.VERTICAL}${repeat(' ', padding)}${line}${repeat(' ', spaces + padding)}${BORDER.VERTICAL}`
     }),
