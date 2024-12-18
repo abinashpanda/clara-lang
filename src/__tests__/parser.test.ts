@@ -84,7 +84,7 @@ test('Parser throws error correctly in parsing let statement', () => {
       `
 1 | let foo 10;
             ^^
-SyntaxError: expected EQ, got NUMBER
+SyntaxError: expected =, got 10 (NUMBER)
       `.trim(),
     )
   }

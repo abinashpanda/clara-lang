@@ -10,6 +10,7 @@
 		"typecheck:watch": "tsc --watch"
 	},
 	"dependencies": {
+		"chalk": "^5.3.0",
 		"commander": "^12.1.0",
 		"ts-pattern": "^5.5.0"
 	},
