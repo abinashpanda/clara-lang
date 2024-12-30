@@ -14,7 +14,7 @@ import {
 } from './ast'
 import type { Lexer } from './lexer'
 import { formatToken, type Token, type TokenType } from './token'
-import { invariant, type Nullable } from './utils'
+import { type Nullable } from './utils'
 import { createLangError, type ErrorType } from './error'
 
 type ParsePrefixFn = () => Expression
@@ -34,7 +34,7 @@ export class Parser {
     this.nextToken()
     this.nextToken()
 
-    this.registerParsePrefixFn('IDENT', this.parsePrimary.bind(this))
+    this.registerParsePrefixFn('IDENT', this.parseIdent.bind(this))
     this.registerParsePrefixFn('NUMBER', this.parsePrimary.bind(this))
     this.registerParsePrefixFn('STRING', this.parsePrimary.bind(this))
     this.registerParsePrefixFn('TRUE', this.parsePrimary.bind(this))
@@ -83,10 +83,11 @@ export class Parser {
 
   private parseLetStatement(): LetStatement {
     this.nextToken()
-    const ident = this.parsePrimary()
-    if (!ident || ident.expressionType !== 'ident') {
-      this.throwError(`expected identifier, got ${this.curToken?.type}`)
-    }
+    const ident = this.parseIdent()
+    this.invariant(
+      ident && ident.expressionType === 'ident',
+      `expected identifier, got ${this.curToken?.type}`,
+    )
     let typeDef: TypeDef | undefined
     if (this.peekToken?.type === 'COLON') {
       this.nextToken() // consume the current identifier token
@@ -131,7 +132,7 @@ export class Parser {
 
   private parseFunctionStatement(): FunctionStatement {
     this.expectPeek('IDENT')
-    invariant(this.curToken, 'curToken would be present')
+    this.invariant(this.curToken, 'curToken would be present')
     const name = this.curToken.literal
 
     this.expectPeek('L_PAREN')
@@ -139,11 +140,10 @@ export class Parser {
 
     const parameters: Parameter[] = []
     while (!['R_PAREN', 'EOF'].includes(this.curToken.type)) {
-      this.expectCurrent('IDENT')
-      const identifier = this.parsePrimary()
-      invariant(
+      const identifier = this.parseIdent()
+      this.invariant(
         identifier.expressionType === 'ident',
-        'it should be an identifier',
+        `expected identifier, got ${formatToken(this.curToken.type, this.curToken.literal)}`,
       )
       this.expectPeek('COLON')
       this.nextToken()
@@ -190,7 +190,7 @@ export class Parser {
   private parseExpression(
     precedence: Precedence = Precedence.LOWEST,
   ): Expression {
-    invariant(this.curToken, 'curToken should be present')
+    this.invariant(this.curToken, 'curToken should be present')
     const parsePrefixFn = this.prefixFnMap[this.curToken.type]
     if (!parsePrefixFn) {
       this.throwError(
@@ -205,7 +205,7 @@ export class Parser {
       this.curToken.type !== 'SEMI' &&
       precedence < this.peekPrecedence()
     ) {
-      invariant(this.peekToken, 'peek token is present')
+      this.invariant(this.peekToken, 'peek token is present')
       const parseInfixFn = this.infixFnMap[this.peekToken?.type]
       if (!parseInfixFn) {
         return left
@@ -220,11 +220,6 @@ export class Parser {
   private parsePrimary() {
     const expression = match(this.curToken)
       .returnType<Expression>()
-      .with({ type: 'IDENT' }, ({ literal }) => ({
-        type: 'expression',
-        expressionType: 'ident',
-        identifier: literal,
-      }))
       .with({ type: 'NUMBER' }, ({ literal }) => {
         const value = Number.parseFloat(literal)
         if (Number.isNaN(value)) {
@@ -258,6 +253,45 @@ export class Parser {
     return expression
   }
 
+  private parseIdent(): Expression {
+    this.invariant(this.curToken, 'curToken is present')
+
+    if (this.peekToken?.type === 'L_PAREN') {
+      const functionName = this.curToken.literal
+      const args: Expression[] = []
+
+      // consume the ident token
+      this.nextToken()
+      // consume the L_PAREN token
+      this.nextToken()
+
+      while (!['EOF', 'R_PAREN'].includes(this.curToken.type)) {
+        const arg = this.parseExpression()
+        args.push(arg)
+        // @ts-expect-error typescript thinks that there would be no overlap, but we call nextToken
+        // method, which would change the value of peekToken
+        if (this.peekToken.type === 'COMMA') {
+          this.nextToken()
+        }
+
+        this.nextToken()
+      }
+
+      return {
+        type: 'expression',
+        expressionType: 'call',
+        functionName,
+        args,
+      }
+    }
+
+    return {
+      type: 'expression',
+      expressionType: 'ident',
+      identifier: this.curToken.literal,
+    }
+  }
+
   private parseTypeDef(): TypeDef {
     return match(this.curToken)
       .returnType<TypeDef>()
@@ -275,8 +309,7 @@ export class Parser {
   }
 
   private parseInfixExpression(left: Expression): Expression {
-    invariant(this.curToken, 'curToken should be present')
-
+    this.invariant(this.curToken, 'curToken should be present')
     const precedence = this.curPrecedence()
     const operator = this.curToken.literal
     this.nextToken()
@@ -311,18 +344,18 @@ export class Parser {
   }
 
   private curPrecedence() {
-    invariant(this.curToken, 'current token should be present')
+    this.invariant(this.curToken, 'current token should be present')
     return OPERATOR_PREDENCE[this.curToken.type] ?? Precedence.LOWEST
   }
 
   private peekPrecedence() {
-    invariant(this.peekToken, 'peek token should be present')
+    this.invariant(this.peekToken, 'peek token should be present')
     return OPERATOR_PREDENCE[this.peekToken?.type] ?? Precedence.LOWEST
   }
 
   private expectPeek(tokenType: TokenType) {
     if (this.peekToken?.type !== tokenType) {
-      invariant(this.peekToken, 'peekToken should be present')
+      this.invariant(this.peekToken, 'peekToken should be present')
       throw createLangError({
         col: this.peekToken?.col,
         line: this.peekToken?.line,
@@ -336,7 +369,7 @@ export class Parser {
 
   private expectCurrent(tokenType: TokenType) {
     if (this.curToken?.type !== tokenType) {
-      invariant(this.curToken, 'curToken should be present')
+      this.invariant(this.curToken, 'curToken should be present')
       throw createLangError({
         col: this.curToken?.col,
         line: this.curToken?.line,
@@ -347,14 +380,22 @@ export class Parser {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private invariant(condition: any, message: string): asserts condition {
+    if (!condition) {
+      this.throwError(message)
+    }
+  }
+
   private throwError(
     message: string,
     errorType: ErrorType = 'SyntaxError',
   ): never {
-    invariant(this.curToken, 'curToken should be present')
     throw createLangError({
-      col: this.curToken?.col,
-      line: this.curToken?.line,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+      col: this.curToken?.col!,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+      line: this.curToken?.line!,
       message,
       errorType,
       src: this.source,

@@ -24,11 +24,17 @@ export function formatExpression(expression: Expression): string {
     .with({ expressionType: 'primary' }, ({ value }) => {
       return String(value)
     })
+    .with({ expressionType: 'ident' }, ({ identifier }) => {
+      return identifier
+    })
     .with({ expressionType: 'prefix' }, ({ operator, right }) => {
       return `(${operator} ${right})`
     })
     .with({ expressionType: 'infix' }, ({ operator, right, left }) => {
       return `(${formatExpression(left)} ${operator} ${formatExpression(right)})`
+    })
+    .with({ expressionType: 'call' }, ({ args, functionName }) => {
+      return `${functionName}(${args.map(formatExpression).join(', ')})`
     })
     .otherwise(() => {
       throw new Error('unknown expression')

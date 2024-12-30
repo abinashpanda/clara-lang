@@ -30,18 +30,24 @@ export type PrefixExpression = BaseExpression & {
   right: Expression
 }
 
+export type CallExpression = BaseExpression & {
+  expressionType: 'call'
+  functionName: string
+  args: Expression[]
+}
+
 export type Expression =
   | Identifier
   | PrimaryExpression
   | InfixExpression
   | PrefixExpression
+  | CallExpression
 
 export enum Precedence {
   LOWEST = 0,
   LOGICAL,
   SUM,
   PRODUCT,
-  CALL,
   PRIMARY,
 }
 
@@ -86,7 +92,7 @@ export type ReturnStatement = BaseStatement & {
 export type FunctionStatement = BaseStatement & {
   statementType: 'function'
   name: string
-  parameters: Param[]
+  parameters: Parameter[]
   returnType: TypeDef
   body: Statement[]
 }

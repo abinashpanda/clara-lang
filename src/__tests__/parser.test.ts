@@ -32,6 +32,14 @@ test('Parser parses expression statement correctly', () => {
       input: '(1 + 2) * 3 - (4 - 3)',
       output: '(((1 + 2) * 3) - (4 - 3))',
     },
+    {
+      input: 'sum(1, 2)',
+      output: 'sum(1, 2)',
+    },
+    {
+      input: 'sum(diff(1, 2), 3 * 3 + invert(false))',
+      output: 'sum(diff(1, 2), ((3 * 3) + invert(false)))',
+    },
   ]
   for (const t of tests) {
     const lexer = new Lexer(t.input)
@@ -117,6 +125,7 @@ fn sum(a: number, b: number): number {
   let sum_value = a + b;
   return sum_value;
 }
+let sum_of_nums = sum(1, 2);
 `
   const lexer = new Lexer(input)
   const parser = new Parser(lexer, input)
@@ -192,5 +201,34 @@ fn sum(a: number, b: number): number {
         },
       },
     ],
+  })
+  const letStatement = program.statements[1]
+  expect(letStatement).toEqual({
+    type: 'statement',
+    statementType: 'let',
+    identifier: {
+      type: 'expression',
+      expressionType: 'ident',
+      identifier: 'sum_of_nums',
+    },
+    expression: {
+      type: 'expression',
+      expressionType: 'call',
+      functionName: 'sum',
+      args: [
+        {
+          type: 'expression',
+          expressionType: 'primary',
+          primaryType: 'number',
+          value: 1,
+        },
+        {
+          type: 'expression',
+          expressionType: 'primary',
+          primaryType: 'number',
+          value: 2,
+        },
+      ],
+    },
   })
 })
