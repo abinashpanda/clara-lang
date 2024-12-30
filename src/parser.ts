@@ -16,6 +16,7 @@ import type { Lexer } from './lexer'
 import { formatToken, type Token, type TokenType } from './token'
 import { type Nullable } from './utils'
 import { createLangError, type ErrorType } from './error'
+import chalk from 'chalk'
 
 type ParsePrefixFn = () => Expression
 type ParseInfixFn = (left: Expression) => Expression
@@ -154,8 +155,8 @@ export class Parser {
         typeDef,
       })
 
-      if (this.peekToken?.type === 'COMMA') {
-        this.nextToken()
+      if (this.peekToken?.type !== 'R_PAREN') {
+        this.expectPeek('COMMA')
       }
 
       this.nextToken()
@@ -270,8 +271,8 @@ export class Parser {
         args.push(arg)
         // @ts-expect-error typescript thinks that there would be no overlap, but we call nextToken
         // method, which would change the value of peekToken
-        if (this.peekToken.type === 'COMMA') {
-          this.nextToken()
+        if (this.peekToken.type !== 'R_PAREN') {
+          this.expectPeek('COMMA')
         }
 
         this.nextToken()
@@ -359,7 +360,7 @@ export class Parser {
       throw createLangError({
         col: this.peekToken?.col,
         line: this.peekToken?.line,
-        message: `expected ${formatToken(tokenType)}, got ${formatToken(this.peekToken?.type, this.peekToken.literal)}`,
+        message: `expected ${chalk.green(formatToken(tokenType))} got ${chalk.yellow(formatToken(this.peekToken?.type, this.peekToken.literal))}`,
         errorType: 'SyntaxError',
         src: this.source,
       })

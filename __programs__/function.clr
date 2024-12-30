@@ -1,0 +1,5 @@
+fn sum(a: number, b: number): number {
+  return a + b;
+}
+let first_sum = sum(1, 2);
+let second_sum = sum(first_sum * 2, 4);

@@ -94,7 +94,7 @@ test('Parser throws error correctly in parsing let statement', () => {
       `
 1 | let foo 10;
             ^^
-${chalk.red('SyntaxError')}: expected =, got 10 (NUMBER)
+${chalk.red('SyntaxError')}: expected ${chalk.green('=')} got ${chalk.yellow('10 (NUMBER)')}
 `,
     )
   }

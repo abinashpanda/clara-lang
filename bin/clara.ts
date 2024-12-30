@@ -1,6 +1,7 @@
 import path from 'node:path'
 import { program } from 'commander'
 import { Runner } from '../src/runner'
+import chalk from 'chalk'
 
 program.name('clara').description('runner for clara lang').version('0.1')
 
@@ -10,6 +11,13 @@ program
   .action(async (fileName) => {
     const absPath = path.resolve(fileName)
     const file = Bun.file(absPath)
+    if (!(await file.exists())) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `${chalk.red('NotFoundError')}: no file found at path ${chalk.yellow(absPath)}`,
+      )
+      process.exit(1)
+    }
     const content = await file.text()
     const runner = new Runner(content, absPath)
     runner.run()
