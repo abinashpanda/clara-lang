@@ -21,7 +21,7 @@ export class Runner {
         console.log(
           [
             `${chalk.red('error')} at ${chalk.green(this.path)}:${chalk.yellow(error.line)}:${chalk.yellow(error.col)}`,
-            box(error.message),
+            box(error.message.trim()),
           ].join('\n'),
         )
       } else {

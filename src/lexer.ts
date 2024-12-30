@@ -179,13 +179,18 @@ export class Lexer {
   }
 
   private skipWhitespace() {
-    while (this.src[0] === '\n' || this.src[0] === '\r') {
-      this.line += 1
-      this.col = 1
-      this.src = this.src.slice(1)
-    }
-    while (this.src[0] === ' ' || this.src[0] === '\t') {
+    while (
+      this.src[0] === ' ' ||
+      this.src[0] === '\t' ||
+      this.src[0] === '\n' ||
+      this.src[0] === '\r'
+    ) {
+      const isNewLine = this.src[0] === '\n' || this.src[0] === '\r'
       this.slice(1)
+      if (isNewLine) {
+        this.line += 1
+        this.col = 1
+      }
     }
   }
 
@@ -194,7 +199,7 @@ export class Lexer {
     while (this.src[i] !== '\n' && i <= this.src.length) {
       i += 1
     }
-    this.src = this.src.slice(i + 1)
+    this.slice(i + 1)
     this.line += 1
     this.col = 1
   }

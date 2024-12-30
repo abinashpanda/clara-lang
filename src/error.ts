@@ -28,7 +28,7 @@ export class LangError extends Error {
     readonly errorType: ErrorType,
     readonly errorMessage: string,
   ) {
-    super(formatError({ src, col, line, errorMessage, errorType }))
+    super(`\n${formatError({ src, col, line, errorMessage, errorType })}\n`)
   }
 }
 

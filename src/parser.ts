@@ -4,8 +4,11 @@ import {
   Precedence,
   type Expression,
   type ExpressionStatement,
+  type FunctionStatement,
   type LetStatement,
+  type Parameter,
   type Program,
+  type ReturnStatement,
   type Statement,
   type TypeDef,
 } from './ast'
@@ -34,8 +37,8 @@ export class Parser {
     this.registerParsePrefixFn('IDENT', this.parsePrimary.bind(this))
     this.registerParsePrefixFn('NUMBER', this.parsePrimary.bind(this))
     this.registerParsePrefixFn('STRING', this.parsePrimary.bind(this))
-    this.registerParseInfixFn('TRUE', this.parsePrimary.bind(this))
-    this.registerParseInfixFn('FALSE', this.parsePrimary.bind(this))
+    this.registerParsePrefixFn('TRUE', this.parsePrimary.bind(this))
+    this.registerParsePrefixFn('FALSE', this.parsePrimary.bind(this))
     this.registerParsePrefixFn('L_PAREN', this.parseGrouped.bind(this))
 
     this.registerParseInfixFn('EQ_EQ', this.parseInfixExpression.bind(this))
@@ -71,6 +74,8 @@ export class Parser {
     return match(this.curToken)
       .returnType<Nullable<Statement>>()
       .with({ type: 'LET' }, () => this.parseLetStatement())
+      .with({ type: 'RETURN' }, () => this.parseReturnStatement())
+      .with({ type: 'FUNCTION' }, () => this.parseFunctionStatement())
       .otherwise(() => {
         return this.parseExpressionStatement()
       })
@@ -104,12 +109,81 @@ export class Parser {
     }
   }
 
+  private parseReturnStatement(): ReturnStatement {
+    this.nextToken()
+    const expression = this.parseExpression()
+    this.expectPeek('SEMI')
+    return {
+      type: 'statement',
+      statementType: 'return',
+      expression,
+    }
+  }
+
   private parseExpressionStatement(): ExpressionStatement {
     const expression = this.parseExpression()
     return {
       type: 'statement',
       statementType: 'expression',
       expression,
+    }
+  }
+
+  private parseFunctionStatement(): FunctionStatement {
+    this.expectPeek('IDENT')
+    invariant(this.curToken, 'curToken would be present')
+    const name = this.curToken.literal
+
+    this.expectPeek('L_PAREN')
+    this.nextToken()
+
+    const parameters: Parameter[] = []
+    while (!['R_PAREN', 'EOF'].includes(this.curToken.type)) {
+      this.expectCurrent('IDENT')
+      const identifier = this.parsePrimary()
+      invariant(
+        identifier.expressionType === 'ident',
+        'it should be an identifier',
+      )
+      this.expectPeek('COLON')
+      this.nextToken()
+      const typeDef = this.parseTypeDef()
+      parameters.push({
+        type: 'parameter',
+        identifier,
+        typeDef,
+      })
+
+      if (this.peekToken?.type === 'COMMA') {
+        this.nextToken()
+      }
+
+      this.nextToken()
+    }
+
+    this.expectPeek('COLON')
+    this.nextToken()
+    const returnType = this.parseTypeDef()
+
+    this.expectPeek('L_BRACE')
+    this.nextToken()
+
+    const body: Statement[] = []
+    while (!['EOF', 'R_BRACE'].includes(this.curToken.type)) {
+      const statment = this.parseStatement()
+      if (statment) {
+        body.push(statment)
+      }
+      this.nextToken()
+    }
+
+    return {
+      type: 'statement',
+      statementType: 'function',
+      returnType,
+      name,
+      parameters,
+      body,
     }
   }
 
@@ -258,6 +332,19 @@ export class Parser {
       })
     }
     this.nextToken()
+  }
+
+  private expectCurrent(tokenType: TokenType) {
+    if (this.curToken?.type !== tokenType) {
+      invariant(this.curToken, 'curToken should be present')
+      throw createLangError({
+        col: this.curToken?.col,
+        line: this.curToken?.line,
+        message: `expected ${formatToken(tokenType)}, got ${formatToken(this.curToken?.type, this.curToken.literal)}`,
+        errorType: 'SyntaxError',
+        src: this.source,
+      })
+    }
   }
 
   private throwError(

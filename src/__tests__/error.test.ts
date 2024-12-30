@@ -15,7 +15,7 @@ test('Error formatter shows error at the correct place', () => {
 1 | let input 10;
               ^^
 ${chalk.red('SyntaxError')}: expected =, got number
-`.trim()
+`
   expect(error.message).toEqual(formattedMessage)
 })
 
@@ -44,6 +44,7 @@ fn main() {
   const formattedError = `
 5 | fn sum(a: number, b: number): 10 
                                   ^^
-${chalk.red('SyntaxError')}: expected type, got number`.trim()
+${chalk.red('SyntaxError')}: expected type, got number
+`
   expect(error.message).toEqual(formattedError)
 })
