@@ -2,9 +2,11 @@ import { match, P } from 'ts-pattern'
 import {
   OPERATOR_PREDENCE,
   Precedence,
+  type BlockStatement,
   type Expression,
   type ExpressionStatement,
   type FunctionStatement,
+  type IfStatement,
   type LetStatement,
   type Parameter,
   type Program,
@@ -77,6 +79,7 @@ export class Parser {
       .with({ type: 'LET' }, () => this.parseLetStatement())
       .with({ type: 'RETURN' }, () => this.parseReturnStatement())
       .with({ type: 'FUNCTION' }, () => this.parseFunctionStatement())
+      .with({ type: 'IF' }, () => this.parseIfStatement())
       .otherwise(() => {
         return this.parseExpressionStatement()
       })
@@ -124,6 +127,7 @@ export class Parser {
 
   private parseExpressionStatement(): ExpressionStatement {
     const expression = this.parseExpression()
+    this.expectPeek('SEMI')
     return {
       type: 'statement',
       statementType: 'expression',
@@ -166,17 +170,7 @@ export class Parser {
     this.nextToken()
     const returnType = this.parseTypeDef()
 
-    this.expectPeek('L_BRACE')
-    this.nextToken()
-
-    const body: Statement[] = []
-    while (!['EOF', 'R_BRACE'].includes(this.curToken.type)) {
-      const statment = this.parseStatement()
-      if (statment) {
-        body.push(statment)
-      }
-      this.nextToken()
-    }
+    const body = this.parseBlockStatement()
 
     return {
       type: 'statement',
@@ -185,6 +179,52 @@ export class Parser {
       name,
       parameters,
       body,
+    }
+  }
+
+  private parseIfStatement(): IfStatement {
+    this.invariant(this.curToken?.type === 'IF', 'expected if token')
+
+    this.expectPeek('L_PAREN')
+    this.nextToken()
+
+    const test = this.parseExpression()
+    this.expectPeek('R_PAREN')
+
+    const consequence = this.parseBlockStatement()
+    let alternate: BlockStatement | undefined = undefined
+    if (this.peekToken?.type === 'ELSE') {
+      this.nextToken()
+      alternate = this.parseBlockStatement()
+    }
+
+    return {
+      type: 'statement',
+      statementType: 'if',
+      test,
+      consequence,
+      alternate,
+    }
+  }
+
+  private parseBlockStatement(): BlockStatement {
+    this.invariant(this.curToken, 'expected token to be present')
+    this.expectPeek('L_BRACE')
+    this.nextToken()
+
+    const statements: Statement[] = []
+    while (!['EOF', 'R_BRACE'].includes(this.curToken.type)) {
+      const statment = this.parseStatement()
+      if (statment) {
+        statements.push(statment)
+      }
+      this.nextToken()
+    }
+
+    return {
+      type: 'statement',
+      statementType: 'block',
+      statements,
     }
   }
 
@@ -255,7 +295,7 @@ export class Parser {
   }
 
   private parseIdent(): Expression {
-    this.invariant(this.curToken, 'curToken is present')
+    this.invariant(this.curToken, 'expected token to be present')
 
     if (this.peekToken?.type === 'L_PAREN') {
       const functionName = this.curToken.literal
@@ -310,7 +350,7 @@ export class Parser {
   }
 
   private parseInfixExpression(left: Expression): Expression {
-    this.invariant(this.curToken, 'curToken should be present')
+    this.invariant(this.curToken, 'expected token to be present')
     const precedence = this.curPrecedence()
     const operator = this.curToken.literal
     this.nextToken()
@@ -345,18 +385,18 @@ export class Parser {
   }
 
   private curPrecedence() {
-    this.invariant(this.curToken, 'current token should be present')
+    this.invariant(this.curToken, 'expected token to be present')
     return OPERATOR_PREDENCE[this.curToken.type] ?? Precedence.LOWEST
   }
 
   private peekPrecedence() {
-    this.invariant(this.peekToken, 'peek token should be present')
+    this.invariant(this.peekToken, 'expected next token to be present')
     return OPERATOR_PREDENCE[this.peekToken?.type] ?? Precedence.LOWEST
   }
 
   private expectPeek(tokenType: TokenType) {
     if (this.peekToken?.type !== tokenType) {
-      this.invariant(this.peekToken, 'peekToken should be present')
+      this.invariant(this.peekToken, 'expected next token to be present')
       throw createLangError({
         col: this.peekToken?.col,
         line: this.peekToken?.line,
@@ -368,23 +408,14 @@ export class Parser {
     this.nextToken()
   }
 
-  private expectCurrent(tokenType: TokenType) {
-    if (this.curToken?.type !== tokenType) {
-      this.invariant(this.curToken, 'curToken should be present')
-      throw createLangError({
-        col: this.curToken?.col,
-        line: this.curToken?.line,
-        message: `expected ${formatToken(tokenType)}, got ${formatToken(this.curToken?.type, this.curToken.literal)}`,
-        errorType: 'SyntaxError',
-        src: this.source,
-      })
-    }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private invariant(condition: any, message: string): asserts condition {
+  private invariant(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    condition: any,
+    message: string,
+    errorType?: ErrorType,
+  ): asserts condition {
     if (!condition) {
-      this.throwError(message)
+      this.throwError(message, errorType)
     }
   }
 

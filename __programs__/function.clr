@@ -3,3 +3,9 @@ fn sum(a: number, b: number): number {
 }
 let first_sum = sum(1, 2);
 let second_sum = sum(first_sum * 2, 4);
+
+if (first_num < second_num) {
+  print("first number is less than second number");
+} else {
+  print("first number is greater than second number");
+}

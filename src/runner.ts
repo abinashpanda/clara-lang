@@ -14,7 +14,9 @@ export class Runner {
 
   run() {
     try {
-      this.parser.parse()
+      const program = this.parser.parse()
+      // eslint-disable-next-line no-console
+      console.log(JSON.stringify(program, null, 2))
     } catch (error) {
       if (error instanceof LangError) {
         // eslint-disable-next-line no-console

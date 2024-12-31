@@ -9,35 +9,35 @@ import type { ExpressionStatement } from '../ast'
 test('Parser parses expression statement correctly', () => {
   const tests: { input: string; output: string }[] = [
     {
-      input: '2 + 3',
+      input: '2 + 3;',
       output: '(2 + 3)',
     },
     {
-      input: '1 + 2 * 3',
+      input: '1 + 2 * 3;',
       output: '(1 + (2 * 3))',
     },
     {
-      input: '(1 + 2) * 3',
+      input: '(1 + 2) * 3;',
       output: '((1 + 2) * 3)',
     },
     {
-      input: '1 * 2 +2',
+      input: '1 * 2 +2;',
       output: '((1 * 2) + 2)',
     },
     {
-      input: '1 + 2 * 3 - 4',
+      input: '1 + 2 * 3 - 4;',
       output: '((1 + (2 * 3)) - 4)',
     },
     {
-      input: '(1 + 2) * 3 - (4 - 3)',
+      input: '(1 + 2) * 3 - (4 - 3);',
       output: '(((1 + 2) * 3) - (4 - 3))',
     },
     {
-      input: 'sum(1, 2)',
+      input: 'sum(1, 2);',
       output: 'sum(1, 2)',
     },
     {
-      input: 'sum(diff(1, 2), 3 * 3 + invert(false))',
+      input: 'sum(diff(1, 2), 3 * 3 + invert(false));',
       output: 'sum(diff(1, 2), ((3 * 3) + invert(false)))',
     },
   ]
@@ -166,41 +166,45 @@ let sum_of_nums = sum(1, 2);
       type: 'typedef',
       defType: 'number',
     },
-    body: [
-      {
-        type: 'statement',
-        statementType: 'let',
-        identifier: {
-          type: 'expression',
-          expressionType: 'ident',
-          identifier: 'sum_value',
-        },
-        expression: {
-          type: 'expression',
-          expressionType: 'infix',
-          operator: '+',
-          left: {
+    body: {
+      type: 'statement',
+      statementType: 'block',
+      statements: [
+        {
+          type: 'statement',
+          statementType: 'let',
+          identifier: {
             type: 'expression',
             expressionType: 'ident',
-            identifier: 'a',
+            identifier: 'sum_value',
           },
-          right: {
+          expression: {
+            type: 'expression',
+            expressionType: 'infix',
+            operator: '+',
+            left: {
+              type: 'expression',
+              expressionType: 'ident',
+              identifier: 'a',
+            },
+            right: {
+              type: 'expression',
+              expressionType: 'ident',
+              identifier: 'b',
+            },
+          },
+        },
+        {
+          type: 'statement',
+          statementType: 'return',
+          expression: {
             type: 'expression',
             expressionType: 'ident',
-            identifier: 'b',
+            identifier: 'sum_value',
           },
         },
-      },
-      {
-        type: 'statement',
-        statementType: 'return',
-        expression: {
-          type: 'expression',
-          expressionType: 'ident',
-          identifier: 'sum_value',
-        },
-      },
-    ],
+      ],
+    },
   })
   const letStatement = program.statements[1]
   expect(letStatement).toEqual({
@@ -227,6 +231,141 @@ let sum_of_nums = sum(1, 2);
           expressionType: 'primary',
           primaryType: 'number',
           value: 2,
+        },
+      ],
+    },
+  })
+})
+
+test('Parser parses if statement correctly', () => {
+  const input = `
+if (sum < 100) {
+  print(sum);
+}
+`
+  const lexer = new Lexer(input)
+  const parser = new Parser(lexer, input)
+  const program = parser.parse()
+  const ifStatement = program.statements[0]
+  expect(ifStatement).toEqual({
+    type: 'statement',
+    statementType: 'if',
+    test: {
+      type: 'expression',
+      expressionType: 'infix',
+      operator: '<',
+      left: {
+        type: 'expression',
+        expressionType: 'ident',
+        identifier: 'sum',
+      },
+      right: {
+        type: 'expression',
+        expressionType: 'primary',
+        primaryType: 'number',
+        value: 100,
+      },
+    },
+    consequence: {
+      type: 'statement',
+      statementType: 'block',
+      statements: [
+        {
+          type: 'statement',
+          statementType: 'expression',
+          expression: {
+            type: 'expression',
+            expressionType: 'call',
+            functionName: 'print',
+            args: [
+              {
+                type: 'expression',
+                expressionType: 'ident',
+                identifier: 'sum',
+              },
+            ],
+          },
+        },
+      ],
+    },
+  })
+})
+
+test('Parser parses if, else statement correctly', () => {
+  const input = `
+if (sum < 2) {
+  print("sum is less than 2");
+} else {
+  print("sum is greater than 2");
+}
+let value = 2;
+`
+  const lexer = new Lexer(input)
+  const parser = new Parser(lexer, input)
+  const program = parser.parse()
+  const ifStatement = program.statements[0]
+  expect(ifStatement).toEqual({
+    type: 'statement',
+    statementType: 'if',
+    test: {
+      type: 'expression',
+      expressionType: 'infix',
+      operator: '<',
+      left: {
+        type: 'expression',
+        expressionType: 'ident',
+        identifier: 'sum',
+      },
+      right: {
+        type: 'expression',
+        expressionType: 'primary',
+        primaryType: 'number',
+        value: 2,
+      },
+    },
+    consequence: {
+      type: 'statement',
+      statementType: 'block',
+      statements: [
+        {
+          type: 'statement',
+          statementType: 'expression',
+          expression: {
+            type: 'expression',
+            expressionType: 'call',
+            functionName: 'print',
+            args: [
+              {
+                type: 'expression',
+                expressionType: 'primary',
+                primaryType: 'string',
+                value: 'sum is less than 2',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    alternate: {
+      type: 'statement',
+      statementType: 'block',
+      statements: [
+        {
+          type: 'statement',
+          statementType: 'expression',
+          expression: {
+            type: 'expression',
+            expressionType: 'call',
+            functionName: 'print',
+            args: [
+              {
+                type: 'expression',
+                expressionType: 'primary',
+                primaryType: 'string',
+                value: 'sum is greater than 2',
+              },
+            ],
+          },
         },
       ],
     },

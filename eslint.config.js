@@ -9,6 +9,7 @@ export default [
   {
     rules: {
       'no-console': 'warn',
+      'object-shorthand': 'error',
     },
   },
 ]

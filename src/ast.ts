@@ -89,12 +89,17 @@ export type ReturnStatement = BaseStatement & {
   expression: Expression
 }
 
+export type BlockStatement = BaseStatement & {
+  statementType: 'block'
+  statements: Statement[]
+}
+
 export type FunctionStatement = BaseStatement & {
   statementType: 'function'
   name: string
   parameters: Parameter[]
   returnType: TypeDef
-  body: Statement[]
+  body: BlockStatement
 }
 
 export type Parameter = {
@@ -104,11 +109,20 @@ export type Parameter = {
   defaultValue?: PrimaryExpression
 }
 
+export type IfStatement = BaseStatement & {
+  statementType: 'if'
+  test: Expression
+  consequence: BlockStatement
+  alternate?: BlockStatement
+}
+
 export type Statement =
   | ExpressionStatement
   | LetStatement
   | ReturnStatement
+  | BlockStatement
   | FunctionStatement
+  | IfStatement
 
 export type BaseTypeDef = {
   type: 'typedef'
