@@ -135,6 +135,10 @@ export type ForStatement = BaseStatement & {
   body: BlockStatement
 }
 
+export type BreakStatement = BaseStatement & {
+  statementType: 'break'
+}
+
 export type Statement =
   | ExpressionStatement
   | LetStatement
@@ -143,6 +147,7 @@ export type Statement =
   | FunctionStatement
   | IfStatement
   | ForStatement
+  | BreakStatement
 
 export type BaseTypeDef = {
   type: 'typedef'

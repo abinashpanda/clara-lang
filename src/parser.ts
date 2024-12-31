@@ -3,6 +3,7 @@ import {
   OPERATOR_PREDENCE,
   Precedence,
   type BlockStatement,
+  type BreakStatement,
   type Expression,
   type ExpressionStatement,
   type ForStatement,
@@ -97,6 +98,7 @@ export class Parser {
       .with({ type: 'FUNCTION' }, () => this.parseFunctionStatement())
       .with({ type: 'IF' }, () => this.parseIfStatement())
       .with({ type: 'FOR' }, () => this.parseForStatement())
+      .with({ type: 'BREAK' }, () => this.parseBreakStatement())
       .otherwise(() => {
         return this.parseExpressionStatement()
       })
@@ -269,16 +271,33 @@ export class Parser {
     }
   }
 
+  private parseBreakStatement(): BreakStatement {
+    this.invariant(this.curToken?.type === 'BREAK', 'expected break token')
+    this.expectPeek('SEMI')
+    return {
+      type: 'statement',
+      statementType: 'break',
+    }
+  }
+
   private parseBlockStatement(): BlockStatement {
     this.invariant(this.curToken, 'expected token to be present')
     this.expectPeek('L_BRACE')
     this.nextToken()
 
     const statements: Statement[] = []
-    while (!['EOF', 'R_BRACE'].includes(this.curToken.type)) {
-      const statment = this.parseStatement()
-      if (statment) {
-        statements.push(statment)
+
+    while (true) {
+      const shouldExit =
+        this.curToken.type === 'EOF' || this.curToken.type === 'R_BRACE'
+
+      if (shouldExit) {
+        break
+      }
+
+      const statement = this.parseStatement()
+      if (statement) {
+        statements.push(statement)
       }
       this.nextToken()
     }

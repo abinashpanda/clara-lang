@@ -413,10 +413,10 @@ test('Parser parses for expression correctly', () => {
   const tests: { input: string; program: Program }[] = [
     {
       input: `
-for (let i = 0; i < 10; i += 1) {
-  print(i);
-}
-`,
+    for (let i = 0; i < 10; i += 1) {
+      print(i);
+    }
+    `,
       program: {
         type: 'program',
         statements: [
@@ -498,11 +498,11 @@ for (let i = 0; i < 10; i += 1) {
     },
     {
       input: `
-let i = 0;
-for (i = 10; i < 50; i *= 2) {
-  print(i * 2);
-}
-`,
+    let i = 0;
+    for (i = 10; i < 50; i *= 2) {
+      print(i * 2);
+    }
+    `,
       program: {
         type: 'program',
         statements: [
@@ -576,6 +576,152 @@ for (i = 10; i < 50; i *= 2) {
               type: 'statement',
               statementType: 'block',
               statements: [
+                {
+                  type: 'statement',
+                  statementType: 'expression',
+                  expression: {
+                    type: 'expression',
+                    expressionType: 'call',
+                    functionName: 'print',
+                    args: [
+                      {
+                        type: 'expression',
+                        expressionType: 'infix',
+                        operator: '*',
+                        left: {
+                          type: 'expression',
+                          expressionType: 'ident',
+                          identifier: 'i',
+                        },
+                        right: {
+                          type: 'expression',
+                          expressionType: 'primary',
+                          primaryType: 'number',
+                          value: 2,
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      input: `
+    let i = 0;
+    for (i = 10; i < 50; i *= 2) {
+      if (i < 40) {
+        break;
+      }
+      print(i * 2);
+    }
+    `,
+      program: {
+        type: 'program',
+        statements: [
+          {
+            type: 'statement',
+            statementType: 'let',
+            identifier: {
+              type: 'expression',
+              expressionType: 'ident',
+              identifier: 'i',
+            },
+            expression: {
+              type: 'expression',
+              expressionType: 'primary',
+              primaryType: 'number',
+              value: 0,
+            },
+          },
+          {
+            type: 'statement',
+            statementType: 'for',
+            init: {
+              type: 'expression',
+              expressionType: 'infix',
+              operator: '=',
+              left: {
+                type: 'expression',
+                expressionType: 'ident',
+                identifier: 'i',
+              },
+              right: {
+                type: 'expression',
+                expressionType: 'primary',
+                primaryType: 'number',
+                value: 10,
+              },
+            },
+            test: {
+              type: 'expression',
+              expressionType: 'infix',
+              operator: '<',
+              left: {
+                type: 'expression',
+                expressionType: 'ident',
+                identifier: 'i',
+              },
+              right: {
+                type: 'expression',
+                expressionType: 'primary',
+                primaryType: 'number',
+                value: 50,
+              },
+            },
+            post: {
+              type: 'expression',
+              expressionType: 'infix',
+              operator: '*=',
+              left: {
+                type: 'expression',
+                expressionType: 'ident',
+                identifier: 'i',
+              },
+              right: {
+                type: 'expression',
+                expressionType: 'primary',
+                primaryType: 'number',
+                value: 2,
+              },
+            },
+            body: {
+              type: 'statement',
+              statementType: 'block',
+              statements: [
+                {
+                  type: 'statement',
+                  statementType: 'if',
+                  test: {
+                    type: 'expression',
+                    expressionType: 'infix',
+                    operator: '<',
+                    left: {
+                      type: 'expression',
+                      expressionType: 'ident',
+                      identifier: 'i',
+                    },
+                    right: {
+                      type: 'expression',
+                      expressionType: 'primary',
+                      primaryType: 'number',
+                      value: 40,
+                    },
+                  },
+                  consequence: {
+                    type: 'statement',
+                    statementType: 'block',
+                    statements: [
+                      {
+                        type: 'statement',
+                        statementType: 'break',
+                      },
+                    ],
+                  },
+                },
                 {
                   type: 'statement',
                   statementType: 'expression',

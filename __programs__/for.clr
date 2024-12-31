@@ -1,0 +1,9 @@
+let i = 0;
+for (i = 10; i < 50; i *= 2) {
+  if (i < 40) {
+    break;
+  } else {
+    print(i * 2);
+  }
+  print("value of i is", i);
+}
