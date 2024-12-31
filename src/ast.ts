@@ -45,6 +45,7 @@ export type Expression =
 
 export enum Precedence {
   LOWEST = 0,
+  ASSIGNMENT,
   LOGICAL,
   SUM,
   PRODUCT,
@@ -52,17 +53,27 @@ export enum Precedence {
 }
 
 export const OPERATOR_PREDENCE: Partial<Record<TokenType, Precedence>> = {
+  EQ: Precedence.ASSIGNMENT,
+  PLUS_EQ: Precedence.ASSIGNMENT,
+  MINUS_EQ: Precedence.ASSIGNMENT,
+  ASTERISK_EQ: Precedence.ASSIGNMENT,
+  SLASH_EQ: Precedence.ASSIGNMENT,
+  MODULUS_EQ: Precedence.ASSIGNMENT,
+
   EQ_EQ: Precedence.LOGICAL,
   NOT_EQ: Precedence.LOGICAL,
   GT: Precedence.LOGICAL,
   GTE: Precedence.LOGICAL,
   LT: Precedence.LOGICAL,
   LTE: Precedence.LOGICAL,
+
   PLUS: Precedence.SUM,
   MINUS: Precedence.SUM,
+
   ASTERISK: Precedence.PRODUCT,
   SLASH: Precedence.PRODUCT,
   MODULUS: Precedence.PRODUCT,
+
   IDENT: Precedence.PRIMARY,
   STRING: Precedence.PRIMARY,
   NUMBER: Precedence.PRIMARY,
@@ -116,6 +127,14 @@ export type IfStatement = BaseStatement & {
   alternate?: BlockStatement
 }
 
+export type ForStatement = BaseStatement & {
+  statementType: 'for'
+  init?: Expression | LetStatement
+  test: Expression
+  post?: Expression
+  body: BlockStatement
+}
+
 export type Statement =
   | ExpressionStatement
   | LetStatement
@@ -123,6 +142,7 @@ export type Statement =
   | BlockStatement
   | FunctionStatement
   | IfStatement
+  | ForStatement
 
 export type BaseTypeDef = {
   type: 'typedef'

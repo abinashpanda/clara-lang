@@ -5,6 +5,7 @@ import {
   type BlockStatement,
   type Expression,
   type ExpressionStatement,
+  type ForStatement,
   type FunctionStatement,
   type IfStatement,
   type LetStatement,
@@ -44,6 +45,19 @@ export class Parser {
     this.registerParsePrefixFn('FALSE', this.parsePrimary.bind(this))
     this.registerParsePrefixFn('L_PAREN', this.parseGrouped.bind(this))
 
+    this.registerParseInfixFn('EQ', this.parseInfixExpression.bind(this))
+    this.registerParseInfixFn('PLUS_EQ', this.parseInfixExpression.bind(this))
+    this.registerParseInfixFn('MINUS_EQ', this.parseInfixExpression.bind(this))
+    this.registerParseInfixFn(
+      'ASTERISK_EQ',
+      this.parseInfixExpression.bind(this),
+    )
+    this.registerParseInfixFn('SLASH_EQ', this.parseInfixExpression.bind(this))
+    this.registerParseInfixFn(
+      'MODULUS_EQ',
+      this.parseInfixExpression.bind(this),
+    )
+
     this.registerParseInfixFn('EQ_EQ', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('NOT_EQ', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('GT', this.parseInfixExpression.bind(this))
@@ -52,8 +66,10 @@ export class Parser {
     this.registerParseInfixFn('LTE', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('AND', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('OR', this.parseInfixExpression.bind(this))
+
     this.registerParseInfixFn('PLUS', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('MINUS', this.parseInfixExpression.bind(this))
+
     this.registerParseInfixFn('ASTERISK', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('SLASH', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('MODULUS', this.parseInfixExpression.bind(this))
@@ -80,6 +96,7 @@ export class Parser {
       .with({ type: 'RETURN' }, () => this.parseReturnStatement())
       .with({ type: 'FUNCTION' }, () => this.parseFunctionStatement())
       .with({ type: 'IF' }, () => this.parseIfStatement())
+      .with({ type: 'FOR' }, () => this.parseForStatement())
       .otherwise(() => {
         return this.parseExpressionStatement()
       })
@@ -204,6 +221,51 @@ export class Parser {
       test,
       consequence,
       alternate,
+    }
+  }
+
+  private parseForStatement(): ForStatement {
+    this.invariant(this.curToken?.type === 'FOR', 'expected for token')
+
+    this.expectPeek('L_PAREN')
+    this.nextToken()
+
+    let init: LetStatement | Expression | undefined = undefined
+    // @ts-expect-error typescript still considers curToken to be of type 'FOR'
+    // but we have called this.nextToken() and the value of the curToken has changed
+    if (this.curToken.type === 'LET') {
+      const statement = this.parseStatement()
+      this.invariant(
+        statement && statement.statementType === 'let',
+        'expected let initialization',
+      )
+      init = statement
+    } else {
+      const expression = this.parseExpression()
+      init = expression
+      // here we have to expect the SEMI token as the parseExpression method doesn't expect a SEMI
+      // unlike the parseStatement
+      this.expectPeek('SEMI')
+    }
+    // consume the semi token
+    this.nextToken()
+
+    const test = this.parseExpression()
+    this.expectPeek('SEMI')
+    // consume the semi token
+    this.nextToken()
+
+    const post = this.parseExpression()
+    this.expectPeek('R_PAREN')
+
+    const body = this.parseBlockStatement()
+    return {
+      type: 'statement',
+      statementType: 'for',
+      init,
+      test,
+      post,
+      body,
     }
   }
 

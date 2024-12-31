@@ -36,18 +36,33 @@ export class Lexer {
         return this.token('DOT', 1)
       })
       .with('+', () => {
+        if (this.src[1] === '=') {
+          return this.token('PLUS_EQ', 2)
+        }
         return this.token('PLUS', 1)
       })
       .with('-', () => {
+        if (this.src[1] === '=') {
+          return this.token('MINUS_EQ', 2)
+        }
         return this.token('MINUS', 1)
       })
       .with('*', () => {
+        if (this.src[1] === '=') {
+          return this.token('ASTERISK_EQ', 2)
+        }
         return this.token('ASTERISK', 1)
       })
       .with('/', () => {
+        if (this.src[1] === '=') {
+          return this.token('SLASH_EQ', 2)
+        }
         return this.token('SLASH', 1)
       })
       .with('%', () => {
+        if (this.src[1] === '=') {
+          return this.token('MODULUS_EQ', 2)
+        }
         return this.token('MODULUS', 1)
       })
       .with('=', () => {

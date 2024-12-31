@@ -16,6 +16,12 @@ export const TOKENS = {
   FALSE: 'false',
 
   EQ: '=',
+  PLUS_EQ: '+=',
+  MINUS_EQ: '-=',
+  ASTERISK_EQ: '*=',
+  SLASH_EQ: '/=',
+  MODULUS_EQ: '%=',
+
   EQ_EQ: '==',
   NOT_EQ: '!=',
   GT: '>',

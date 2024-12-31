@@ -4,7 +4,7 @@ import { Parser } from '../parser'
 import { formatExpression } from '../utils'
 import { LangError } from '../error'
 import chalk from 'chalk'
-import type { ExpressionStatement } from '../ast'
+import type { ExpressionStatement, Program } from '../ast'
 
 test('Parser parses expression statement correctly', () => {
   const tests: { input: string; output: string }[] = [
@@ -370,4 +370,250 @@ let value = 2;
       ],
     },
   })
+})
+
+test('Parser parses assignment expressions correctly', () => {
+  const tests: { input: string; output: string }[] = [
+    {
+      input: 'sum = 2 + 3;',
+      output: '(sum = (2 + 3))',
+    },
+    {
+      input: 'diff = first_number - second_number;',
+      output: '(diff = (first_number - second_number))',
+    },
+    {
+      input: 'product *= 3 + 4 / 5;',
+      output: '(product *= (3 + (4 / 5)))',
+    },
+    {
+      input: 'division /= 2;',
+      output: '(division /= 2)',
+    },
+    {
+      input: 'modulus %= 4 / 4 + 4;',
+      output: '(modulus %= ((4 / 4) + 4))',
+    },
+  ]
+  for (const test of tests) {
+    const lexer = new Lexer(test.input)
+    const parser = new Parser(lexer, test.input)
+    const program = parser.parse()
+    expect(program.statements.length).toBe(1)
+    const expressionStatement = program.statements[0]
+    expect(expressionStatement.statementType).toBe('expression')
+    const output = formatExpression(
+      (expressionStatement as ExpressionStatement).expression,
+    )
+    expect(output).toEqual(test.output)
+  }
+})
+
+test('Parser parses for expression correctly', () => {
+  const tests: { input: string; program: Program }[] = [
+    {
+      input: `
+for (let i = 0; i < 10; i += 1) {
+  print(i);
+}
+`,
+      program: {
+        type: 'program',
+        statements: [
+          {
+            type: 'statement',
+            statementType: 'for',
+            init: {
+              type: 'statement',
+              statementType: 'let',
+              identifier: {
+                type: 'expression',
+                expressionType: 'ident',
+                identifier: 'i',
+              },
+              expression: {
+                type: 'expression',
+                expressionType: 'primary',
+                primaryType: 'number',
+                value: 0,
+              },
+            },
+            test: {
+              type: 'expression',
+              expressionType: 'infix',
+              operator: '<',
+              left: {
+                type: 'expression',
+                expressionType: 'ident',
+                identifier: 'i',
+              },
+              right: {
+                type: 'expression',
+                expressionType: 'primary',
+                primaryType: 'number',
+                value: 10,
+              },
+            },
+            post: {
+              type: 'expression',
+              expressionType: 'infix',
+              operator: '+=',
+              left: {
+                type: 'expression',
+                expressionType: 'ident',
+                identifier: 'i',
+              },
+              right: {
+                type: 'expression',
+                expressionType: 'primary',
+                primaryType: 'number',
+                value: 1,
+              },
+            },
+            body: {
+              type: 'statement',
+              statementType: 'block',
+              statements: [
+                {
+                  type: 'statement',
+                  statementType: 'expression',
+                  expression: {
+                    type: 'expression',
+                    expressionType: 'call',
+                    functionName: 'print',
+                    args: [
+                      {
+                        type: 'expression',
+                        expressionType: 'ident',
+                        identifier: 'i',
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      input: `
+let i = 0;
+for (i = 10; i < 50; i *= 2) {
+  print(i * 2);
+}
+`,
+      program: {
+        type: 'program',
+        statements: [
+          {
+            type: 'statement',
+            statementType: 'let',
+            identifier: {
+              type: 'expression',
+              expressionType: 'ident',
+              identifier: 'i',
+            },
+            expression: {
+              type: 'expression',
+              expressionType: 'primary',
+              primaryType: 'number',
+              value: 0,
+            },
+          },
+          {
+            type: 'statement',
+            statementType: 'for',
+            init: {
+              type: 'expression',
+              expressionType: 'infix',
+              operator: '=',
+              left: {
+                type: 'expression',
+                expressionType: 'ident',
+                identifier: 'i',
+              },
+              right: {
+                type: 'expression',
+                expressionType: 'primary',
+                primaryType: 'number',
+                value: 10,
+              },
+            },
+            test: {
+              type: 'expression',
+              expressionType: 'infix',
+              operator: '<',
+              left: {
+                type: 'expression',
+                expressionType: 'ident',
+                identifier: 'i',
+              },
+              right: {
+                type: 'expression',
+                expressionType: 'primary',
+                primaryType: 'number',
+                value: 50,
+              },
+            },
+            post: {
+              type: 'expression',
+              expressionType: 'infix',
+              operator: '*=',
+              left: {
+                type: 'expression',
+                expressionType: 'ident',
+                identifier: 'i',
+              },
+              right: {
+                type: 'expression',
+                expressionType: 'primary',
+                primaryType: 'number',
+                value: 2,
+              },
+            },
+            body: {
+              type: 'statement',
+              statementType: 'block',
+              statements: [
+                {
+                  type: 'statement',
+                  statementType: 'expression',
+                  expression: {
+                    type: 'expression',
+                    expressionType: 'call',
+                    functionName: 'print',
+                    args: [
+                      {
+                        type: 'expression',
+                        expressionType: 'infix',
+                        operator: '*',
+                        left: {
+                          type: 'expression',
+                          expressionType: 'ident',
+                          identifier: 'i',
+                        },
+                        right: {
+                          type: 'expression',
+                          expressionType: 'primary',
+                          primaryType: 'number',
+                          value: 2,
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ]
+  for (const test of tests) {
+    const lexer = new Lexer(test.input)
+    const parser = new Parser(lexer, test.input)
+    const program = parser.parse()
+    expect(program).toEqual(test.program)
+  }
 })
