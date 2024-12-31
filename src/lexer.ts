@@ -51,6 +51,9 @@ export class Lexer {
         if (this.src[1] === '=') {
           return this.token('ASTERISK_EQ', 2)
         }
+        if (this.src[1] === '*') {
+          return this.token('EXPONENT', 2)
+        }
         return this.token('ASTERISK', 1)
       })
       .with('/', () => {
@@ -75,11 +78,17 @@ export class Lexer {
         if (this.src[1] === '=') {
           return this.token('GTE', 2)
         }
+        if (this.src[1] === '>') {
+          return this.token('RIGHT_SHIFT', 2)
+        }
         return this.token('GT', 1)
       })
       .with('<', () => {
         if (this.src[1] === '=') {
           return this.token('LTE', 2)
+        }
+        if (this.src[1] === '<') {
+          return this.token('LEFT_SHIFT', 2)
         }
         return this.token('LT', 1)
       })
@@ -88,6 +97,15 @@ export class Lexer {
           return this.token('NOT_EQ', 2)
         }
         return this.token('BANG', 1)
+      })
+      .with('&', () => {
+        return this.token('BITWISE_AND', 1)
+      })
+      .with('|', () => {
+        return this.token('BITWISE_OR', 1)
+      })
+      .with('^', () => {
+        return this.token('BITWISE_XOR', 1)
       })
       .with('(', () => {
         return this.token('L_PAREN', 1)

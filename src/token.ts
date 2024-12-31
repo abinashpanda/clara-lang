@@ -12,6 +12,13 @@ export const TOKENS = {
   AND: 'and',
   OR: 'or',
 
+  BITWISE_AND: '&',
+  BITWISE_OR: '|',
+  BITWISE_XOR: '^',
+
+  LEFT_SHIFT: '<<',
+  RIGHT_SHIFT: '>>',
+
   TRUE: 'true',
   FALSE: 'false',
 
@@ -42,6 +49,7 @@ export const TOKENS = {
   ASTERISK: '*',
   SLASH: '/',
   MODULUS: '%',
+  EXPONENT: '**',
 
   IDENT: '<identifier>',
   LET: 'let',

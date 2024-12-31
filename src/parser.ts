@@ -59,14 +59,38 @@ export class Parser {
       this.parseInfixExpression.bind(this),
     )
 
+    this.registerParseInfixFn('OR', this.parseInfixExpression.bind(this))
+    this.registerParseInfixFn('AND', this.parseInfixExpression.bind(this))
+
+    this.registerParseInfixFn(
+      'BITWISE_AND',
+      this.parseInfixExpression.bind(this),
+    )
+    this.registerParseInfixFn(
+      'BITWISE_OR',
+      this.parseInfixExpression.bind(this),
+    )
+    this.registerParseInfixFn(
+      'BITWISE_XOR',
+      this.parseInfixExpression.bind(this),
+    )
+
     this.registerParseInfixFn('EQ_EQ', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('NOT_EQ', this.parseInfixExpression.bind(this))
+
     this.registerParseInfixFn('GT', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('GTE', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('LT', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('LTE', this.parseInfixExpression.bind(this))
-    this.registerParseInfixFn('AND', this.parseInfixExpression.bind(this))
-    this.registerParseInfixFn('OR', this.parseInfixExpression.bind(this))
+
+    this.registerParseInfixFn(
+      'LEFT_SHIFT',
+      this.parseInfixExpression.bind(this),
+    )
+    this.registerParseInfixFn(
+      'RIGHT_SHIFT',
+      this.parseInfixExpression.bind(this),
+    )
 
     this.registerParseInfixFn('PLUS', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('MINUS', this.parseInfixExpression.bind(this))
@@ -74,6 +98,8 @@ export class Parser {
     this.registerParseInfixFn('ASTERISK', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('SLASH', this.parseInfixExpression.bind(this))
     this.registerParseInfixFn('MODULUS', this.parseInfixExpression.bind(this))
+
+    this.registerParseInfixFn('EXPONENT', this.parseInfixExpression.bind(this))
   }
 
   parse(): Program {

@@ -47,8 +47,13 @@ export enum Precedence {
   LOWEST = 0,
   ASSIGNMENT,
   LOGICAL,
+  BITWISE,
+  EQUALITY,
+  RELATIONAL,
+  BITWISE_SHIFT,
   SUM,
   PRODUCT,
+  EXPONENT,
   PRIMARY,
 }
 
@@ -60,12 +65,23 @@ export const OPERATOR_PREDENCE: Partial<Record<TokenType, Precedence>> = {
   SLASH_EQ: Precedence.ASSIGNMENT,
   MODULUS_EQ: Precedence.ASSIGNMENT,
 
-  EQ_EQ: Precedence.LOGICAL,
-  NOT_EQ: Precedence.LOGICAL,
-  GT: Precedence.LOGICAL,
-  GTE: Precedence.LOGICAL,
-  LT: Precedence.LOGICAL,
-  LTE: Precedence.LOGICAL,
+  OR: Precedence.LOGICAL,
+  AND: Precedence.LOGICAL,
+
+  BITWISE_AND: Precedence.BITWISE,
+  BITWISE_OR: Precedence.BITWISE,
+  BITWISE_XOR: Precedence.BITWISE,
+
+  EQ_EQ: Precedence.EQUALITY,
+  NOT_EQ: Precedence.EQUALITY,
+
+  GT: Precedence.RELATIONAL,
+  GTE: Precedence.RELATIONAL,
+  LT: Precedence.RELATIONAL,
+  LTE: Precedence.RELATIONAL,
+
+  LEFT_SHIFT: Precedence.BITWISE_SHIFT,
+  RIGHT_SHIFT: Precedence.BITWISE_SHIFT,
 
   PLUS: Precedence.SUM,
   MINUS: Precedence.SUM,
@@ -73,6 +89,8 @@ export const OPERATOR_PREDENCE: Partial<Record<TokenType, Precedence>> = {
   ASTERISK: Precedence.PRODUCT,
   SLASH: Precedence.PRODUCT,
   MODULUS: Precedence.PRODUCT,
+
+  EXPONENT: Precedence.EXPONENT,
 
   IDENT: Precedence.PRIMARY,
   STRING: Precedence.PRIMARY,
