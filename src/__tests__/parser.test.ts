@@ -1,7 +1,7 @@
 import { test, expect } from 'bun:test'
 import { Lexer } from '../lexer'
 import { Parser } from '../parser'
-import { formatExpression } from '../utils'
+import { formatExpression } from '../formatter'
 import { LangError } from '../error'
 import chalk from 'chalk'
 import type { ExpressionStatement, Program } from '../ast'

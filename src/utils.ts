@@ -1,6 +1,3 @@
-import { match } from 'ts-pattern'
-import type { Expression } from './ast'
-
 export type Nullable<T> = T | null
 
 export function invariant(
@@ -18,45 +15,66 @@ export function invariant(
   }
 }
 
-export function formatExpression(expression: Expression): string {
-  return match(expression)
-    .returnType<string>()
-    .with({ expressionType: 'primary' }, ({ value }) => {
-      return String(value)
-    })
-    .with({ expressionType: 'ident' }, ({ identifier }) => {
-      return identifier
-    })
-    .with({ expressionType: 'prefix' }, ({ operator, right }) => {
-      return `(${operator} ${right})`
-    })
-    .with({ expressionType: 'infix' }, ({ operator, right, left }) => {
-      return `(${formatExpression(left)} ${operator} ${formatExpression(right)})`
-    })
-    .with({ expressionType: 'call' }, ({ args, functionName }) => {
-      return `${functionName}(${args.map(formatExpression).join(', ')})`
-    })
-    .otherwise(() => {
-      throw new Error('unknown expression')
-    })
-}
-
-export function repeat(char: string, count: number) {
-  let message = ''
-  for (let i = 0; i < count; i++) {
-    message += char
+const BORDER_TYPES = {
+  normal: {
+    HORIZONTAL: '─',
+    VERTICAL: '│',
+    TOP_LEFT: '┌',
+    TOP_RIGHT: '┐',
+    BOTTOM_LEFT: '└',
+    BOTTOM_RIGHT: '┘',
+  },
+  rounded: {
+    HORIZONTAL: '─',
+    VERTICAL: '│',
+    TOP_LEFT: '╭',
+    TOP_RIGHT: '╮',
+    BOTTOM_LEFT: '╰',
+    BOTTOM_RIGHT: '╯',
+  },
+} satisfies Record<
+  string,
+  {
+    HORIZONTAL: string
+    VERTICAL: string
+    TOP_LEFT: string
+    TOP_RIGHT: string
+    BOTTOM_LEFT: string
+    BOTTOM_RIGHT: string
   }
-  return message
-}
+>
+type BorderType = keyof typeof BORDER_TYPES
 
-const BORDER = {
-  HORIZONTAL: '─',
-  VERTICAL: '│',
-  TOP_LEFT: '╭',
-  TOP_RIGHT: '╮',
-  BOTTOM_LEFT: '╰',
-  BOTTOM_RIGHT: '╯',
-} as const
+export function box(
+  str: string,
+  opts?: {
+    padding?: number
+    borderType?: BorderType
+  },
+) {
+  const borderType = opts?.borderType ?? 'normal'
+  const border = BORDER_TYPES[borderType]
+
+  const lines = str.split('\n')
+  const maxChars = Math.max(
+    ...lines.map((line) => {
+      return getCharacterLength(line)
+    }),
+  )
+
+  const padding = opts?.padding ?? 1
+  const horizontalLength = maxChars + 2 * padding
+
+  return [
+    `${border.TOP_LEFT}${repeat(border.HORIZONTAL, horizontalLength)}${border.TOP_RIGHT}`,
+    ...lines.map((line) => {
+      const chars = getCharacterLength(line)
+      const spaces = maxChars - chars
+      return `${border.VERTICAL}${repeat(' ', padding)}${line}${repeat(' ', spaces + padding)}${border.VERTICAL}`
+    }),
+    `${border.BOTTOM_LEFT}${repeat(border.HORIZONTAL, horizontalLength)}${border.BOTTOM_RIGHT}`,
+  ].join('\n')
+}
 
 function getCharacterLength(str: string) {
   // Remove ANSI escape sequences
@@ -66,22 +84,10 @@ function getCharacterLength(str: string) {
   return [...cleanStr].length
 }
 
-export function box(str: string, padding: number = 1) {
-  const lines = str.split('\n')
-  const maxChars = Math.max(
-    ...lines.map((line) => {
-      return getCharacterLength(line)
-    }),
-  )
-  const horizontalChars = maxChars + 2 * padding
-
-  return [
-    `${BORDER.TOP_LEFT}${repeat(BORDER.HORIZONTAL, horizontalChars)}${BORDER.TOP_RIGHT}`,
-    ...lines.map((line) => {
-      const chars = getCharacterLength(line)
-      const spaces = maxChars - chars
-      return `${BORDER.VERTICAL}${repeat(' ', padding)}${line}${repeat(' ', spaces + padding)}${BORDER.VERTICAL}`
-    }),
-    `${BORDER.BOTTOM_LEFT}${repeat(BORDER.HORIZONTAL, horizontalChars)}${BORDER.BOTTOM_RIGHT}`,
-  ].join('\n')
+export function repeat(char: string, count: number) {
+  let message = ''
+  for (let i = 0; i < count; i++) {
+    message += char
+  }
+  return message
 }
