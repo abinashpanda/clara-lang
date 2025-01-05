@@ -148,7 +148,7 @@ export type IfStatement = BaseStatement & {
 export type ForStatement = BaseStatement & {
   statementType: 'for'
   init?: Expression | LetStatement
-  test: Expression
+  test?: Expression
   post?: Expression
   body: BlockStatement
 }

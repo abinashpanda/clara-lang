@@ -755,6 +755,40 @@ test('Parser parses for expression correctly', () => {
         ],
       },
     },
+    {
+      input: `
+let sum = 1;
+# a for loop without any initialization, test or post, would be
+# equaivalent to while(true) in other programming language
+for {
+  sum += 1;
+  if (sum > 100) {
+    break;
+  }
+}
+print(sum);
+`,
+      program: {
+        type: 'program',
+        statements: [
+          {
+            type: 'statement',
+            statementType: 'let',
+            identifier: {
+              type: 'expression',
+              expressionType: 'ident',
+              identifier: 'sum',
+            },
+            expression: {
+              type: 'expression',
+              expressionType: 'primary',
+              primaryType: 'number',
+              value: 1,
+            },
+          },
+        ],
+      },
+    },
   ]
   for (const test of tests) {
     const lexer = new Lexer(test.input)

@@ -1,3 +1,8 @@
 let first_number: number = 10;
-let second_number: number 20;
+let second_number: number = 20;
 let third_number = first_number + second_number;
+
+fn sum(first_number: number, second_number: number): number {
+	return first_number + second_number;
+}
+

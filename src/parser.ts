@@ -254,6 +254,14 @@ export class Parser {
 
   private parseForStatement(): ForStatement {
     this.invariant(this.curToken?.type === 'FOR', 'expected for token')
+    if (this.peekToken?.type === 'L_BRACE') {
+      const body = this.parseBlockStatement()
+      return {
+        type: 'statement',
+        statementType: 'for',
+        body,
+      }
+    }
 
     this.expectPeek('L_PAREN')
     this.nextToken()
