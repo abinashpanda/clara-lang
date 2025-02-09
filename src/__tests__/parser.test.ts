@@ -498,11 +498,11 @@ test('Parser parses for expression correctly', () => {
     },
     {
       input: `
-    let i = 0;
-    for (i = 10; i < 50; i *= 2) {
-      print(i * 2);
-    }
-    `,
+        let i = 0;
+        for (i = 10; i < 50; i *= 2) {
+          print(i * 2);
+        }
+        `,
       program: {
         type: 'program',
         statements: [
@@ -611,14 +611,14 @@ test('Parser parses for expression correctly', () => {
     },
     {
       input: `
-    let i = 0;
-    for (i = 10; i < 50; i *= 2) {
-      if (i < 40) {
-        break;
-      }
-      print(i * 2);
-    }
-    `,
+        let i = 0;
+        for (i = 10; i < 50; i *= 2) {
+          if (i < 40) {
+            break;
+          }
+          print(i * 2);
+        }
+        `,
       program: {
         type: 'program',
         statements: [
@@ -757,17 +757,17 @@ test('Parser parses for expression correctly', () => {
     },
     {
       input: `
-let sum = 1;
-# a for loop without any initialization, test or post, would be
-# equaivalent to while(true) in other programming language
-for {
-  sum += 1;
-  if (sum > 100) {
-    break;
-  }
-}
-print(sum);
-`,
+    let sum = 1;
+    # a for loop without any initialization, test or post, would be
+    # equaivalent to while(true) in other programming language
+    for {
+      sum += 1;
+      if (sum > 100) {
+        break;
+      }
+    }
+    print(sum);
+    `,
       program: {
         type: 'program',
         statements: [
@@ -784,6 +784,82 @@ print(sum);
               expressionType: 'primary',
               primaryType: 'number',
               value: 1,
+            },
+          },
+          {
+            type: 'statement',
+            statementType: 'for',
+            body: {
+              type: 'statement',
+              statementType: 'block',
+              statements: [
+                {
+                  type: 'statement',
+                  statementType: 'expression',
+                  expression: {
+                    type: 'expression',
+                    expressionType: 'infix',
+                    operator: '+=',
+                    left: {
+                      type: 'expression',
+                      expressionType: 'ident',
+                      identifier: 'sum',
+                    },
+                    right: {
+                      type: 'expression',
+                      expressionType: 'primary',
+                      primaryType: 'number',
+                      value: 1,
+                    },
+                  },
+                },
+                {
+                  type: 'statement',
+                  statementType: 'if',
+                  test: {
+                    type: 'expression',
+                    expressionType: 'infix',
+                    operator: '>',
+                    left: {
+                      type: 'expression',
+                      expressionType: 'ident',
+                      identifier: 'sum',
+                    },
+                    right: {
+                      type: 'expression',
+                      expressionType: 'primary',
+                      primaryType: 'number',
+                      value: 100,
+                    },
+                  },
+                  consequence: {
+                    type: 'statement',
+                    statementType: 'block',
+                    statements: [
+                      {
+                        type: 'statement',
+                        statementType: 'break',
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            type: 'statement',
+            statementType: 'expression',
+            expression: {
+              type: 'expression',
+              expressionType: 'call',
+              functionName: 'print',
+              args: [
+                {
+                  type: 'expression',
+                  expressionType: 'ident',
+                  identifier: 'sum',
+                },
+              ],
             },
           },
         ],
