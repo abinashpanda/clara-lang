@@ -32,7 +32,7 @@ export type PrefixExpression = BaseExpression & {
 
 export type CallExpression = BaseExpression & {
   expressionType: 'call'
-  functionName: string
+  callee: Identifier | CallExpression
   args: Expression[]
 }
 

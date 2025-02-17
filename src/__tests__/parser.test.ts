@@ -218,7 +218,11 @@ let sum_of_nums = sum(1, 2);
     expression: {
       type: 'expression',
       expressionType: 'call',
-      functionName: 'sum',
+      callee: {
+        type: 'expression',
+        expressionType: 'ident',
+        identifier: 'sum',
+      },
       args: [
         {
           type: 'expression',
@@ -276,7 +280,11 @@ if (sum < 100) {
           expression: {
             type: 'expression',
             expressionType: 'call',
-            functionName: 'print',
+            callee: {
+              type: 'expression',
+              expressionType: 'ident',
+              identifier: 'print',
+            },
             args: [
               {
                 type: 'expression',
@@ -333,7 +341,11 @@ let value = 2;
           expression: {
             type: 'expression',
             expressionType: 'call',
-            functionName: 'print',
+            callee: {
+              type: 'expression',
+              expressionType: 'ident',
+              identifier: 'print',
+            },
             args: [
               {
                 type: 'expression',
@@ -356,7 +368,11 @@ let value = 2;
           expression: {
             type: 'expression',
             expressionType: 'call',
-            functionName: 'print',
+            callee: {
+              type: 'expression',
+              expressionType: 'ident',
+              identifier: 'print',
+            },
             args: [
               {
                 type: 'expression',
@@ -480,7 +496,11 @@ test('Parser parses for expression correctly', () => {
                   expression: {
                     type: 'expression',
                     expressionType: 'call',
-                    functionName: 'print',
+                    callee: {
+                      type: 'expression',
+                      expressionType: 'ident',
+                      identifier: 'print',
+                    },
                     args: [
                       {
                         type: 'expression',
@@ -582,7 +602,11 @@ test('Parser parses for expression correctly', () => {
                   expression: {
                     type: 'expression',
                     expressionType: 'call',
-                    functionName: 'print',
+                    callee: {
+                      type: 'expression',
+                      expressionType: 'ident',
+                      identifier: 'print',
+                    },
                     args: [
                       {
                         type: 'expression',
@@ -728,7 +752,11 @@ test('Parser parses for expression correctly', () => {
                   expression: {
                     type: 'expression',
                     expressionType: 'call',
-                    functionName: 'print',
+                    callee: {
+                      type: 'expression',
+                      expressionType: 'ident',
+                      identifier: 'print',
+                    },
                     args: [
                       {
                         type: 'expression',
@@ -852,7 +880,11 @@ test('Parser parses for expression correctly', () => {
             expression: {
               type: 'expression',
               expressionType: 'call',
-              functionName: 'print',
+              callee: {
+                type: 'expression',
+                expressionType: 'ident',
+                identifier: 'print',
+              },
               args: [
                 {
                   type: 'expression',

@@ -16,8 +16,8 @@ export function formatExpression(expression: Expression): string {
     .with({ expressionType: 'infix' }, ({ operator, right, left }) => {
       return `(${formatExpression(left)} ${operator} ${formatExpression(right)})`
     })
-    .with({ expressionType: 'call' }, ({ args, functionName }) => {
-      return `${functionName}(${args.map(formatExpression).join(', ')})`
+    .with({ expressionType: 'call' }, ({ args, callee }) => {
+      return `${formatExpression(callee)}(${args.map(formatExpression).join(', ')})`
     })
     .exhaustive()
 }

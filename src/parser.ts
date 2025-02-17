@@ -412,6 +412,7 @@ export class Parser {
   private parseIdent(): Expression {
     this.invariant(this.curToken, 'expected token to be present')
 
+    // TODO: handle call expression where the callee is an call expression itself
     if (this.peekToken?.type === 'L_PAREN') {
       const functionName = this.curToken.literal
       const args: Expression[] = []
@@ -436,7 +437,11 @@ export class Parser {
       return {
         type: 'expression',
         expressionType: 'call',
-        functionName,
+        callee: {
+          type: 'expression',
+          expressionType: 'ident',
+          identifier: functionName,
+        },
         args,
       }
     }
