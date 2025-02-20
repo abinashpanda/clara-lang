@@ -4,10 +4,12 @@ import {
   Precedence,
   type BlockStatement,
   type BreakStatement,
+  type CallExpression,
   type Expression,
   type ExpressionStatement,
   type ForStatement,
   type FunctionStatement,
+  type Identifier,
   type IfStatement,
   type LetStatement,
   type Parameter,
@@ -415,35 +417,14 @@ export class Parser {
     // TODO: handle call expression where the callee is an call expression itself
     if (this.peekToken?.type === 'L_PAREN') {
       const functionName = this.curToken.literal
-      const args: Expression[] = []
-
       // consume the ident token
       this.nextToken()
-      // consume the L_PAREN token
-      this.nextToken()
-
-      while (!['EOF', 'R_PAREN'].includes(this.curToken.type)) {
-        const arg = this.parseExpression()
-        args.push(arg)
-        // @ts-expect-error typescript thinks that there would be no overlap, but we call nextToken
-        // method, which would change the value of peekToken
-        if (this.peekToken.type !== 'R_PAREN') {
-          this.expectPeek('COMMA')
-        }
-
-        this.nextToken()
-      }
-
-      return {
+      const callee = {
         type: 'expression',
-        expressionType: 'call',
-        callee: {
-          type: 'expression',
-          expressionType: 'ident',
-          identifier: functionName,
-        },
-        args,
-      }
+        expressionType: 'ident',
+        identifier: functionName,
+      } satisfies Identifier
+      return this.parseCallExpression(callee)
     }
 
     return {
@@ -451,6 +432,43 @@ export class Parser {
       expressionType: 'ident',
       identifier: this.curToken.literal,
     }
+  }
+
+  private parseCallExpression(
+    callee: CallExpression['callee'],
+  ): CallExpression {
+    this.invariant(this.curToken, 'expected token to be present')
+
+    const args: Expression[] = []
+
+    // consume the L_PAREN token
+    this.nextToken()
+
+    while (!['EOF', 'R_PAREN'].includes(this.curToken.type)) {
+      const arg = this.parseExpression()
+      args.push(arg)
+      // @ts-expect-error typescript thinks that there would be no overlap, but we call nextToken
+      // method, which would change the value of peekToken
+      if (this.peekToken.type !== 'R_PAREN') {
+        this.expectPeek('COMMA')
+      }
+
+      this.nextToken()
+    }
+
+    const callExpression = {
+      type: 'expression',
+      expressionType: 'call',
+      callee,
+      args,
+    } satisfies CallExpression
+
+    if (this.peekToken?.type === 'L_PAREN') {
+      this.nextToken()
+      return this.parseCallExpression(callExpression)
+    }
+
+    return callExpression
   }
 
   private parseTypeDef(): TypeDef {

@@ -6,3 +6,9 @@ fn sum(first_number: number, second_number: number): number {
 	return first_number + second_number;
 }
 
+fn create_summer(first_number: number): (arg: number) => number {
+	return fn sum(second_number: number) {
+		return first_number + second_number;
+	}
+}
+

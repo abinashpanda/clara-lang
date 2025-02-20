@@ -40,6 +40,10 @@ test('Parser parses expression statement correctly', () => {
       input: 'sum(diff(1, 2), 3 * 3 + invert(false));',
       output: 'sum(diff(1, 2), ((3 * 3) + invert(false)))',
     },
+    {
+      input: 'createSummer(1)(2);',
+      output: '(createSummer(1))(2)',
+    },
   ]
   for (const t of tests) {
     const lexer = new Lexer(t.input)

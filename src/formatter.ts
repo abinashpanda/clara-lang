@@ -17,7 +17,10 @@ export function formatExpression(expression: Expression): string {
       return `(${formatExpression(left)} ${operator} ${formatExpression(right)})`
     })
     .with({ expressionType: 'call' }, ({ args, callee }) => {
-      return `${formatExpression(callee)}(${args.map(formatExpression).join(', ')})`
+      if (callee.expressionType === 'ident') {
+        return `${callee.identifier}(${args.map(formatExpression).join(', ')})`
+      }
+      return `(${formatExpression(callee)})(${args.map(formatExpression).join(', ')})`
     })
     .exhaustive()
 }
