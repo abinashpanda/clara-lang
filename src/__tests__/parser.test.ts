@@ -909,3 +909,35 @@ test('Parser parses for expression correctly', () => {
     expect(program).toEqual(test.program)
   }
 })
+
+test('Parser parses type definitions correctly', () => {
+  const tests: { input: string; program: Program }[] = [
+    {
+      input: 'type Number = number;',
+      program: {
+        type: 'program',
+        statements: [
+          {
+            type: 'statement',
+            statementType: 'typedef',
+            identifier: {
+              type: 'expression',
+              expressionType: 'ident',
+              identifier: 'Number',
+            },
+            typeDef: {
+              type: 'typedef',
+              defType: 'number',
+            },
+          },
+        ],
+      },
+    },
+  ]
+  for (const { input, program } of tests) {
+    const lexer = new Lexer(input)
+    const parser = new Parser(lexer, input)
+    const output = parser.parse()
+    expect(output).toEqual(program)
+  }
+})

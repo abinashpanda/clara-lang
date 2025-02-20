@@ -17,6 +17,7 @@ import {
   type ReturnStatement,
   type Statement,
   type TypeDef,
+  type TypeDefStatement,
 } from './ast'
 import type { Lexer } from './lexer'
 import { formatToken, type Token, type TokenType } from './token'
@@ -127,6 +128,7 @@ export class Parser {
       .with({ type: 'IF' }, () => this.parseIfStatement())
       .with({ type: 'FOR' }, () => this.parseForStatement())
       .with({ type: 'BREAK' }, () => this.parseBreakStatement())
+      .with({ type: 'TYPE' }, () => this.parseTypeStatement())
       .otherwise(() => {
         return this.parseExpressionStatement()
       })
@@ -313,6 +315,25 @@ export class Parser {
     return {
       type: 'statement',
       statementType: 'break',
+    }
+  }
+
+  private parseTypeStatement(): TypeDefStatement {
+    this.invariant(this.curToken?.type === 'TYPE', 'exptected type token')
+    this.expectPeek('IDENT')
+    const identifier = this.parseIdent()
+    this.invariant(identifier.expressionType === 'ident', 'expected identifier')
+
+    this.expectPeek('EQ')
+    this.nextToken()
+
+    const typeDef = this.parseTypeDef()
+    this.expectPeek('SEMI')
+    return {
+      type: 'statement',
+      statementType: 'typedef',
+      identifier,
+      typeDef,
     }
   }
 

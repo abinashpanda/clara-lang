@@ -157,6 +157,12 @@ export type BreakStatement = BaseStatement & {
   statementType: 'break'
 }
 
+export type TypeDefStatement = BaseStatement & {
+  statementType: 'typedef'
+  identifier: Identifier
+  typeDef: TypeDef
+}
+
 export type Statement =
   | ExpressionStatement
   | LetStatement
@@ -166,6 +172,7 @@ export type Statement =
   | IfStatement
   | ForStatement
   | BreakStatement
+  | TypeDefStatement
 
 export type BaseTypeDef = {
   type: 'typedef'
