@@ -503,6 +503,18 @@ export class Parser {
         type: 'typedef',
         defType: 'string',
       }))
+      .with({ type: 'IDENT' }, () => {
+        const identifier = this.parseIdent()
+        this.invariant(
+          identifier.expressionType === 'ident',
+          'expected identifier',
+        )
+        return {
+          type: 'typedef',
+          defType: 'custom',
+          identifier,
+        }
+      })
       .otherwise(() => {
         this.throwError(`expected type, got ${this.curToken?.type}`)
       })

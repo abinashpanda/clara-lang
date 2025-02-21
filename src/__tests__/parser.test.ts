@@ -913,7 +913,12 @@ test('Parser parses for expression correctly', () => {
 test('Parser parses type definitions correctly', () => {
   const tests: { input: string; program: Program }[] = [
     {
-      input: 'type Number = number;',
+      input: `
+type Number = number;
+fn generate_random_number(): Number {
+  return 0;
+}
+      `,
       program: {
         type: 'program',
         statements: [
@@ -929,6 +934,37 @@ test('Parser parses type definitions correctly', () => {
               type: 'typedef',
               defType: 'number',
             },
+          },
+          {
+            type: 'statement',
+            statementType: 'function',
+            name: 'generate_random_number',
+            returnType: {
+              type: 'typedef',
+              defType: 'custom',
+              identifier: {
+                type: 'expression',
+                expressionType: 'ident',
+                identifier: 'Number',
+              },
+            },
+            body: {
+              type: 'statement',
+              statementType: 'block',
+              statements: [
+                {
+                  type: 'statement',
+                  statementType: 'return',
+                  expression: {
+                    type: 'expression',
+                    expressionType: 'primary',
+                    primaryType: 'number',
+                    value: 0,
+                  },
+                },
+              ],
+            },
+            parameters: [],
           },
         ],
       },

@@ -186,7 +186,12 @@ export type NumberTypeDef = BaseTypeDef & {
   defType: 'number'
 }
 
-export type TypeDef = StringTypeDef | NumberTypeDef
+export type CustomTypeDef = BaseTypeDef & {
+  defType: 'custom'
+  identifier: Identifier
+}
+
+export type TypeDef = StringTypeDef | NumberTypeDef | CustomTypeDef
 
 export type Program = {
   type: 'program'
